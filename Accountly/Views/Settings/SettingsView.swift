@@ -29,8 +29,7 @@ struct SettingsView: View {
                     Spacer()
                 }                .padding(.horizontal, 30)
 
-                          .padding(.top, 40)
-                          .padding(.bottom,20)
+                          .padding(.vertical, 35)
                 
                 HStack(spacing: 12) {
                     Image(systemName: "gear")
@@ -56,17 +55,19 @@ struct SettingsView: View {
                                 .font(.system(size: 20))
                                 .foregroundColor(.white)
                                 .frame(width: 24)
+                                .padding(.leading, 15)
                             
                             Text("My Account")
-                                .font(.system(size: 18))
+                                .font(.headline)
+                                .fontWeight(.medium)
                                 .foregroundColor(.white)
                             
                             Spacer()
                         }
-                        .padding(.horizontal, 20)
-                        .frame(width: 293, height: 49)
+                        .frame(maxWidth: .infinity, minHeight: 40 ,maxHeight: 55)
                         .background(Color("BrandSecondary"))
-                        .cornerRadius(20)
+                        .cornerRadius(22)
+                        .padding(.horizontal, 40)
                     }
                     
                     Button(action: {
@@ -77,17 +78,19 @@ struct SettingsView: View {
                                 .font(.system(size: 20))
                                 .foregroundColor(.white)
                                 .frame(width: 24)
+                                .padding(.leading, 15)
                             
                             Text("Log out")
-                                .font(.system(size: 18))
+                                .font(.headline)
+                                .fontWeight(.medium)
                                 .foregroundColor(.white)
                             
                             Spacer()
                         }
-                        .padding(.horizontal, 20)
-                        .frame(width: 293, height: 49)
+                        .frame(maxWidth: .infinity, minHeight: 40 ,maxHeight: 55)
                         .background(Color("BrandSecondary"))
-                        .cornerRadius(20)
+                        .cornerRadius(22)
+                        .padding(.horizontal, 40)
                     }
                     
                     Button(action: {
@@ -98,17 +101,20 @@ struct SettingsView: View {
                                 .font(.system(size: 20))
                                 .foregroundColor(.white)
                                 .frame(width: 24)
+                                .padding(.leading, 15)
                             
                             Text("About")
-                                .font(.system(size: 18))
+                                .font(.headline)
+                                .fontWeight(.medium)
                                 .foregroundColor(.white)
                             
                             Spacer()
                         }
-                        .padding(.horizontal, 20)
-                        .frame(width: 293, height: 49)
+                        
+                        .frame(maxWidth: .infinity, minHeight: 40 ,maxHeight: 55)
                         .background(Color("BrandSecondary"))
-                        .cornerRadius(20)
+                        .cornerRadius(22)
+                        .padding(.horizontal, 40)
                     }
                 }
                 .padding(.horizontal, 5)

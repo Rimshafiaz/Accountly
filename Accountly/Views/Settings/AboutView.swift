@@ -30,7 +30,7 @@ struct AboutView: View {
                     
                     Spacer()
                 }
-                          .padding(.top, 20)
+                          .padding(.vertical, 20)
                 
                 HStack(spacing: 12) {
                     Image(systemName: "book")
@@ -41,34 +41,39 @@ struct AboutView: View {
                         .font(.system(size: 32, weight: .semibold))
                         .foregroundColor(Color("BrandPrimary"))
                     
-                    Spacer()
 
                 }
-                .padding(.bottom, 20)
+                Spacer()
+                    .frame(maxHeight: 24)
+
                 
                 VStack(alignment: .leading, spacing: 16) {
                     Text("App Name :")
-                        .font(.system(size: 24, weight: .semibold))
+                        .font(.title.weight(.semibold))
                         .foregroundColor(Color("BrandSecondary").opacity(1.2))
                     
                     Text("Accountly")
-                        .font(.system(size: 22, weight: .semibold))
+                        .font(.title2.weight(.semibold))
                         .foregroundColor(Color("BrandPrimary"))
                     
                     Text("This app helps you securely manage and view user profiles in one place.")
-                        .font(.system(size: 16, weight: .medium))
+                        .font(.body.weight(.medium))
                         .foregroundColor(Color("BrandPrimary"))
 
                     Text("You can explore people, view details and update your own profile with ease.")
-                        .font(.system(size: 16, weight: .medium))
+                        .font(.body.weight(.medium))
+
                         .foregroundColor(Color("BrandPrimary"))
 
                     
                     Text("Designed for clarity, privacy, and performance.")
-                        .font(.system(size: 16, weight: .medium))
+                        .font(.body.weight(.medium))
+
                         .foregroundColor(Color("BrandPrimary"))
                    
                 }
+                .frame(maxWidth: .infinity, alignment: .leading)
+
                 .padding(24)
                 .background(
                     RoundedRectangle(cornerRadius: 16)
@@ -81,7 +86,7 @@ struct AboutView: View {
                 
                 Spacer()
             }
-            .padding(.horizontal, 24)
+            .padding(.horizontal, 30)
         }
     }
 }

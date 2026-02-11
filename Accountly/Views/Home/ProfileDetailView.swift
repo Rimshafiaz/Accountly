@@ -27,8 +27,7 @@ struct ProfileDetailView: View {
                 }
                 .frame(maxWidth: .infinity, alignment: .leading)
                 .padding(.horizontal, 30)
-                .padding(.top, 40)
-                .padding(.bottom , 15)
+                .padding(.vertical, 20)
 
                 HStack {
                     Text("ⓐ")
@@ -44,11 +43,11 @@ struct ProfileDetailView: View {
                     Spacer()
                 }
                 .padding(.horizontal, 30)
-                .padding(.bottom, 30)
+                .padding(.vertical, 25)
 
                 Text("\(user.firstName) \(user.lastName)")
                     .font(.title)
-                    .fontWeight(.medium)
+                    .fontWeight(.semibold)
                     .foregroundColor(Color("BrandPrimary"))
                     .padding(.bottom, 30)
 
@@ -70,13 +69,14 @@ struct ProfileDetailView: View {
                             .clipShape(Circle())
                     case .failure(_):
                         Circle()
-                            .fill(Color("BrandSecondary"))
+                            .fill(Color("BrandGray"))
                             .frame(width: 143, height: 143)
                             .overlay {
-                                Image(systemName: "person.crop.circle.fill")
+                                Image(systemName: "person.fill")
                                     .resizable()
+                                    .scaledToFit()
                                     .frame(width: 143, height: 143)
-                                    .foregroundStyle(Color("BrandGray"))
+                                    .foregroundColor(.black)
                             }
                     @unknown default:
                         EmptyView()
@@ -84,7 +84,7 @@ struct ProfileDetailView: View {
                 }
                 .padding(.bottom, 30)
 
-                VStack(spacing: 10) {
+                VStack(spacing: 12) {
                     ProfileReadOnlyField(
                         icon: "envelope.fill",
                         text: user.email
@@ -118,7 +118,8 @@ struct ProfileReadOnlyField: View {
         ZStack(alignment: .leading) {
             RoundedRectangle(cornerRadius: 20)
                 .fill(Color("BrandSecondary"))
-                .frame(width: 293, height: 38)
+                .frame(maxWidth: .infinity, minHeight: 40, maxHeight: 60)
+
 
             HStack(spacing: 15) {
                 Image(systemName: icon)
@@ -128,7 +129,7 @@ struct ProfileReadOnlyField: View {
                     .padding(.leading, 15)
 
                 Text(text)
-                    .font(.system(size: 14))
+                    .font(.body)
                     .foregroundColor(.white)
 
                 Spacer()

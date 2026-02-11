@@ -26,14 +26,13 @@ struct HomeView: View {
                     
                     Spacer()
                 }
-                .padding(.top, 40)
+                .padding(.vertical, 35)
                 .padding(.horizontal, 30)
-                .padding(.bottom, 30)
                 
                 HStack(spacing: 12) {
                     Image(systemName: "person.3.fill")
                         .font(.system(size: 24))
-                        .foregroundColor(Color("BrandPrimary"))
+                        .foregroundColor(.black)
                     
                     Text("Community")
                         .font(.title)
@@ -81,7 +80,7 @@ struct HomeView: View {
                 }
                 
                 Spacer()
-                    .frame(height: 100)
+                    .frame(minHeight: 100)
             }
         }
         .background(Color("AppBackground").ignoresSafeArea())

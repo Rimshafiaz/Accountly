@@ -21,77 +21,63 @@ struct UserCardView: View {
             ZStack(alignment: .leading) {
                 RoundedRectangle(cornerRadius: 20)
                     .fill(Color("BrandSecondary"))
-                    .frame(width: 316, height: 108)
+                    .frame(height: 108)
 
                 HStack(spacing: 15) {
-                AsyncImage(url: URL(string: user.profileImageURL ?? "")) { phase in
-                    switch phase {
-                    case .empty:
-                        Circle()
-                            .fill(Color("BrandGray"))
-                            .frame(width: 57, height: 57)
-                            .overlay {
-                                ProgressView()
-                                    .tint(.white)
-                            }
-                        
-                    case .success(let image):
-                        image
-                            .resizable()
-                            .scaledToFill()
-                            .frame(width: 57, height: 57)
-                            .clipShape(Circle())
-                        
-                    case .failure(_):
-                        Circle()
-                            .fill(Color("BrandGray"))
-                            .frame(width: 57, height: 57)
-                            .overlay {
-                                Image(systemName: "person.fill")
-                                    .resizable()
+                    AsyncImage(url: URL(string: user.profileImageURL ?? "")) { phase in
+                        switch phase {
+                        case .empty:
+                            Circle()
+                                .fill(Color("BrandGray"))
+                                .frame(width: 57, height: 57)
+                                .overlay {
+                                    ProgressView().tint(.white)
+                                }
+
+                        case .success(let image):
+                            image
+                                .resizable()
+                                .scaledToFill()
+                                .frame(width: 57, height: 57)
+                                .clipShape(Circle())
+
+                        case .failure:
+                            Circle()
+                                .fill(Color("BrandGray"))
+                                .frame(width: 57, height: 57)
+                                .overlay {
+                                    Image(systemName: "person.fill")
+                                        .resizable()
                                         .scaledToFit()
                                         .frame(width: 31, height: 31)
-                                    .foregroundColor(.black)
-                                    .padding(.leading, 2 )
-                            }
-                        
-                    @unknown default:
-                        EmptyView()
+                                        .foregroundColor(.black)
+                                }
+
+                        @unknown default:
+                            EmptyView()
+                        }
                     }
+
+                    VStack(alignment: .leading, spacing: 4) {
+                        Text("\(user.firstName) \(user.lastName)")
+                        Text(user.email)
+                        Text(user.contactNumber)
+                        Text("\(user.birthDay)/\(user.birthMonth)/\(user.birthYear)")
+                    }
+                    .font(.system(size: 16))
+                    .foregroundColor(.white)
+
+                    Spacer()
                 }
-                .frame(width: 57, height: 57)
-                
-                VStack(alignment: .leading, spacing: 4) {
-                    Text("\(user.firstName) \(user.lastName)")
-                        .font(.system(size: 16))
-                        .fontWeight(.regular)
-                        .foregroundColor(.white)
-                    
-                    Text(user.email)
-                        .font(.system(size: 16))
-                        .fontWeight(.regular)
-                        .foregroundColor(.white)
-                    
-                    Text(user.contactNumber)
-                        .font(.system(size: 16))
-                        .fontWeight(.regular)
-                        .foregroundColor(.white)
-                    
-                    Text("\(user.birthDay)/\(user.birthMonth)/\(user.birthYear)")
-                        .font(.system(size: 16))
-                        .fontWeight(.regular)
-                        .foregroundColor(.white)
-                }
-                
-                Spacer()
+                .padding(.horizontal, 15)
             }
-            .padding(.leading, 15)
+            .frame(maxWidth: .infinity)
         }
-        }
-        .buttonStyle(PlainButtonStyle())
-        .frame(width: 316, height: 108)
+        .buttonStyle(.plain)
+        .frame(maxWidth: .infinity, minHeight: 108)
     }
 }
+
 #Preview {
     let mockUser = User(
         id: "123",
