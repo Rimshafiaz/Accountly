@@ -129,13 +129,11 @@ return "Invalid Birth Date"        }
             }
 
             self.uploadProfileImage(userId: userId) { imageURL in
-                if let imageURL = imageURL {
-                    self.saveUserData(userId: userId, profileImageURL: imageURL)
-                } else {
-                    self.isLoading = false
-                    self.errorMessage = "Failed to upload profile image"
-                }
+                let finalImageURL = imageURL ?? "https://example.com/placeholder.jpg"
+                self.saveUserData(userId: userId, profileImageURL: finalImageURL)
             }
+
+            
         }
     }
 
@@ -176,8 +174,8 @@ return "Invalid Birth Date"        }
             self.isLoading = false
             if let error = error {
                 self.errorMessage = error.localizedDescription
-            } else {
             }
+        
         }
     }
 }

@@ -7,6 +7,8 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		593D731F2F3B2E8400DBC5D1 /* GoogleSignIn in Frameworks */ = {isa = PBXBuildFile; productRef = 593D731E2F3B2E8400DBC5D1 /* GoogleSignIn */; };
+		593D73212F3B2E8400DBC5D1 /* GoogleSignInSwift in Frameworks */ = {isa = PBXBuildFile; productRef = 593D73202F3B2E8400DBC5D1 /* GoogleSignInSwift */; };
 		596B5E112F30EA80004D9D26 /* GoogleService-Info.plist in Resources */ = {isa = PBXBuildFile; fileRef = 596B5E102F30EA7F004D9D26 /* GoogleService-Info.plist */; };
 		596B5E142F30EDD6004D9D26 /* FirebaseAI in Frameworks */ = {isa = PBXBuildFile; productRef = 596B5E132F30EDD6004D9D26 /* FirebaseAI */; };
 		596B5E162F30EDD6004D9D26 /* FirebaseAILogic in Frameworks */ = {isa = PBXBuildFile; productRef = 596B5E152F30EDD6004D9D26 /* FirebaseAILogic */; };
@@ -40,9 +42,22 @@
 		59FDF3A42F31EA0300AAEC70 /* .gitignore */ = {isa = PBXFileReference; lastKnownFileType = text; path = .gitignore; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
+/* Begin PBXFileSystemSynchronizedBuildFileExceptionSet section */
+		59ECF2E22F3A39A8005FB899 /* Exceptions for "Accountly" folder in "Accountly" target */ = {
+			isa = PBXFileSystemSynchronizedBuildFileExceptionSet;
+			membershipExceptions = (
+				Info.plist,
+			);
+			target = 596B5DE72F30CFF0004D9D26 /* Accountly */;
+		};
+/* End PBXFileSystemSynchronizedBuildFileExceptionSet section */
+
 /* Begin PBXFileSystemSynchronizedRootGroup section */
 		596B5DEA2F30CFF0004D9D26 /* Accountly */ = {
 			isa = PBXFileSystemSynchronizedRootGroup;
+			exceptions = (
+				59ECF2E22F3A39A8005FB899 /* Exceptions for "Accountly" folder in "Accountly" target */,
+			);
 			path = Accountly;
 			sourceTree = "<group>";
 		};
@@ -70,8 +85,10 @@
 				596B5E422F30F81C004D9D26 /* FirebaseMessaging in Frameworks */,
 				596B5E402F30F81C004D9D26 /* FirebaseMLModelDownloader in Frameworks */,
 				596B5E442F30F81C004D9D26 /* FirebasePerformance in Frameworks */,
+				593D731F2F3B2E8400DBC5D1 /* GoogleSignIn in Frameworks */,
 				596B5E2E2F30F81C004D9D26 /* FirebaseCore in Frameworks */,
 				596B5E262F30F81C004D9D26 /* FirebaseAppCheck in Frameworks */,
+				593D73212F3B2E8400DBC5D1 /* GoogleSignInSwift in Frameworks */,
 				596B5E1A2F30EDD6004D9D26 /* FirebaseAnalyticsCore in Frameworks */,
 				596B5E382F30F81C004D9D26 /* FirebaseFunctions in Frameworks */,
 				596B5E2A2F30F81C004D9D26 /* FirebaseAuth in Frameworks */,
@@ -143,6 +160,8 @@
 				596B5E432F30F81C004D9D26 /* FirebasePerformance */,
 				596B5E452F30F81C004D9D26 /* FirebaseRemoteConfig */,
 				596B5E472F30F860004D9D26 /* FirebaseStorageCombine-Community */,
+				593D731E2F3B2E8400DBC5D1 /* GoogleSignIn */,
+				593D73202F3B2E8400DBC5D1 /* GoogleSignInSwift */,
 			);
 			productName = Accountly;
 			productReference = 596B5DE82F30CFF0004D9D26 /* Accountly.app */;
@@ -174,6 +193,7 @@
 			minimizedProjectReferenceProxies = 1;
 			packageReferences = (
 				596B5E122F30EDD6004D9D26 /* XCRemoteSwiftPackageReference "firebase-ios-sdk" */,
+				593D731D2F3B2E8400DBC5D1 /* XCRemoteSwiftPackageReference "GoogleSignIn-iOS" */,
 			);
 			preferredProjectObjectVersion = 77;
 			productRefGroup = 596B5DE92F30CFF0004D9D26 /* Products */;
@@ -334,11 +354,13 @@
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
+				CODE_SIGN_ENTITLEMENTS = Accountly/Accountly.entitlements;
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1;
 				DEVELOPMENT_TEAM = TH66942J28;
 				ENABLE_PREVIEWS = YES;
 				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_FILE = Accountly/Info.plist;
 				INFOPLIST_KEY_UIApplicationSceneManifest_Generation = YES;
 				INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES;
 				INFOPLIST_KEY_UILaunchScreen_Generation = YES;
@@ -366,11 +388,13 @@
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
+				CODE_SIGN_ENTITLEMENTS = Accountly/Accountly.entitlements;
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1;
 				DEVELOPMENT_TEAM = TH66942J28;
 				ENABLE_PREVIEWS = YES;
 				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_FILE = Accountly/Info.plist;
 				INFOPLIST_KEY_UIApplicationSceneManifest_Generation = YES;
 				INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES;
 				INFOPLIST_KEY_UILaunchScreen_Generation = YES;
@@ -417,6 +441,14 @@
 /* End XCConfigurationList section */
 
 /* Begin XCRemoteSwiftPackageReference section */
+		593D731D2F3B2E8400DBC5D1 /* XCRemoteSwiftPackageReference "GoogleSignIn-iOS" */ = {
+			isa = XCRemoteSwiftPackageReference;
+			repositoryURL = "https://github.com/google/GoogleSignIn-iOS";
+			requirement = {
+				kind = upToNextMajorVersion;
+				minimumVersion = 9.1.0;
+			};
+		};
 		596B5E122F30EDD6004D9D26 /* XCRemoteSwiftPackageReference "firebase-ios-sdk" */ = {
 			isa = XCRemoteSwiftPackageReference;
 			repositoryURL = "https://github.com/firebase/firebase-ios-sdk";
@@ -428,6 +460,16 @@
 /* End XCRemoteSwiftPackageReference section */
 
 /* Begin XCSwiftPackageProductDependency section */
+		593D731E2F3B2E8400DBC5D1 /* GoogleSignIn */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = 593D731D2F3B2E8400DBC5D1 /* XCRemoteSwiftPackageReference "GoogleSignIn-iOS" */;
+			productName = GoogleSignIn;
+		};
+		593D73202F3B2E8400DBC5D1 /* GoogleSignInSwift */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = 593D731D2F3B2E8400DBC5D1 /* XCRemoteSwiftPackageReference "GoogleSignIn-iOS" */;
+			productName = GoogleSignInSwift;
+		};
 		596B5E132F30EDD6004D9D26 /* FirebaseAI */ = {
 			isa = XCSwiftPackageProductDependency;
 			package = 596B5E122F30EDD6004D9D26 /* XCRemoteSwiftPackageReference "firebase-ios-sdk" */;

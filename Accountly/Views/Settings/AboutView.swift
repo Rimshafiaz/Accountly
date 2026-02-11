@@ -18,12 +18,18 @@ struct AboutView: View {
             VStack(alignment: .leading, spacing: 24) {
                 
                 HStack {
-                              Text("@ Accountly")
-                                  .font(.largeTitle)
-                                  .fontWeight(.bold)
-                                  .foregroundColor(Color("BrandPrimary"))
-                              Spacer()
-                          }
+                    Text("ⓐ")
+                        .font(.system(size: 28))
+                        .fontWeight(.bold)
+                        .foregroundColor(Color("BrandPrimary"))
+                    
+                    Text("Accountly")
+                        .font(.largeTitle)
+                        .fontWeight(.bold)
+                        .foregroundColor(Color("BrandPrimary"))
+                    
+                    Spacer()
+                }
                           .padding(.top, 20)
                 
                 HStack(spacing: 12) {

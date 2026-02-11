@@ -5,3 +5,5 @@ GoogleService-Info.plist
 *.xcuserstate
 xcuserdata/
 DerivedData/
+Screen/
+Accountly.entitlement

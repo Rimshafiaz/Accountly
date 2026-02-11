@@ -6,27 +6,521 @@
 //
 
 import SwiftUI
+import PhotosUI
 
 struct MyProfileView: View {
-    var body: some View {
-        VStack {
-            
-            HStack {
-                          Text("@  Accountly")
-                              .font(.largeTitle)
-                              .fontWeight(.bold)
-                              .foregroundColor(Color("BrandPrimary"))
-                          Spacer()
-                      }
-                      .padding(.top, 40)
-                      .padding(.horizontal,30)
+    @StateObject private var viewModel = MyProfileViewModel()
+    @State private var selectedPickerItem: PhotosPickerItem?
+    @State private var showPassword = false
 
-      
-      Spacer()        }
-        .frame(maxWidth: .infinity, maxHeight: .infinity)
-        .background {
-            Color("AppBackground")
-                .ignoresSafeArea()
+    var body: some View {
+        ScrollView {
+            VStack(spacing: 0) {
+                headerSection
+                contentSection
+            }
+        }
+        .background(Color("AppBackground").ignoresSafeArea())
+        .onAppear {
+            viewModel.fetchCurrentUserProfile()
+        }
+        .onChange(of: selectedPickerItem) {
+            if let newItem = selectedPickerItem {
+                Task {
+                    if let data = try? await newItem.loadTransferable(type: Data.self),
+                       let uiImage = UIImage(data: data) {
+                        viewModel.profileImage = uiImage
+                    }
+                }
+            }
+        }
+    }
+
+    private var headerSection: some View {
+        HStack {
+            Text("ⓐ")
+                .font(.system(size: 28))
+                .fontWeight(.bold)
+                .foregroundColor(Color("BrandPrimary"))
+
+            Text("Accountly")
+                .font(.largeTitle)
+                .fontWeight(.bold)
+                .foregroundColor(Color("BrandPrimary"))
+
+            Spacer()
+
+            
+        }
+        .padding(.top, 40)
+        .padding(.horizontal, 30)
+        .padding(.bottom, 40)
+    }
+
+    private var contentSection: some View {
+        Group {
+            if viewModel.isLoading {
+                loadingView
+            } else if let error = viewModel.errorMessage {
+                errorView(error)
+            } else if viewModel.currentUser != nil {
+                profileContent
+            }
+        }
+    }
+
+    private var loadingView: some View {
+        ProgressView()
+            .tint(Color("BrandPrimary"))
+            .padding(.top, 50)
+    }
+
+    private func errorView(_ error: String) -> some View {
+        VStack(spacing: 16) {
+            Image(systemName: "exclamationmark.triangle.fill")
+                .font(.system(size: 40))
+                .foregroundColor(Color("BrandPrimary"))
+
+            Text(error)
+                .foregroundColor(Color("BrandPrimary"))
+                .multilineTextAlignment(.center)
+
+            Button("Retry") {
+                viewModel.fetchCurrentUserProfile()
+            }
+            .foregroundColor(.white)
+            .padding(.horizontal, 30)
+            .padding(.vertical, 12)
+            .background(Color("BrandPrimary"))
+            .cornerRadius(10)
+        }
+        .padding(.top, 50)
+    }
+
+    private var profileContent: some View {
+        VStack(spacing: 20) {
+            userNameSection
+            profileImageSection
+            profileFieldsSection
+            actionButtonsSection
+        }
+    }
+
+    private var userNameSection: some View {
+        Text("\(viewModel.firstName) \(viewModel.lastName)")
+            .font(.title)
+            .fontWeight(.medium)
+            .foregroundColor(Color("BrandPrimary"))
+    }
+
+    private var profileImageSection: some View {
+        Group {
+            if viewModel.isEditMode {
+                profileImagePicker
+            } else {
+                profileImageDisplay
+            }
+        }
+    }
+
+    private var profileImagePicker: some View {
+        PhotosPicker(
+            selection: $selectedPickerItem,
+            matching: .images,
+            photoLibrary: .shared()
+        ) {
+            ZStack {
+                Circle()
+                    .frame(width: 143, height: 143)
+                    .foregroundColor(Color("BrandSecondary"))
+
+                if let profileImage = viewModel.profileImage {
+                    Image(uiImage: profileImage)
+                        .resizable()
+                        .scaledToFill()
+                        .frame(width: 143, height: 143)
+                        .clipShape(Circle())
+                } else if let urlString = viewModel.profileImageURL,
+                          let url = URL(string: urlString) {
+                    AsyncImage(url: url) { image in
+                        image
+                            .resizable()
+                            .scaledToFill()
+                    } placeholder: {
+                        Image(systemName: "person.crop.circle.fill")
+                            .resizable()
+                            .frame(width: 143, height: 143)
+                            .foregroundStyle(Color("BrandGray"))
+                    }
+                    .frame(width: 143, height: 143)
+                    .clipShape(Circle())
+                } else {
+                    Image(systemName: "person.crop.circle.fill")
+                        .resizable()
+                        .frame(width: 143, height: 143)
+                        .foregroundStyle(Color("BrandGray"))
+                }
+            }
+        }
+    }
+
+    private var profileImageDisplay: some View {
+        AsyncImage(url: URL(string: viewModel.profileImageURL ?? "")) { phase in
+            switch phase {
+            case .empty:
+                Circle()
+                    .fill(Color("BrandSecondary"))
+                    .frame(width: 143, height: 143)
+                    .overlay {
+                        ProgressView()
+                            .tint(.white)
+                    }
+            case .success(let image):
+                image
+                    .resizable()
+                    .scaledToFill()
+                    .frame(width: 143, height: 143)
+                    .clipShape(Circle())
+            case .failure(_):
+                Circle()
+                    .fill(Color("BrandSecondary"))
+                    .frame(width: 143, height: 143)
+                    .overlay {
+                        Image(systemName: "person.crop.circle.fill")
+                            .resizable()
+                            .frame(width: 143, height: 143)
+                            .foregroundStyle(Color("BrandGray"))
+                    }
+            @unknown default:
+                EmptyView()
+            }
+        }
+    }
+
+    private var profileFieldsSection: some View {
+        VStack(spacing: 10) {
+            nameFields
+            contactField
+            dobField
+            emailField
+            passwordField
+        }
+        .padding(.horizontal, 43)
+        .padding(.top, 20)
+    }
+
+    private var nameFields: some View {
+        Group {
+            if viewModel.isEditMode {
+                HStack(spacing: 10) {
+                firstNameField
+                lastNameField
+                }
+            } else {
+                ProfileInfoField(
+                    icon: "person.fill",
+                    text: "\(viewModel.firstName) \(viewModel.lastName)"
+                )
+            }
+        }
+    }
+
+    private var firstNameField: some View {
+        ZStack {
+            RoundedRectangle(cornerRadius: 20)
+                .fill(Color("BrandSecondary"))
+                .frame(width: 144, height: 38)
+
+            HStack {
+                Image(systemName: "person.fill")
+                    .foregroundColor(.white)
+                    .padding(.leading, 15)
+
+                TextField("First Name", text: $viewModel.firstName)
+                    .foregroundColor(.white)
+                    .font(.system(size: 14))
+                    .autocapitalization(.words)
+                    .disableAutocorrection(true)
+            }
+        }
+    }
+
+    private var lastNameField: some View {
+        ZStack {
+            RoundedRectangle(cornerRadius: 20)
+                .fill(Color("BrandSecondary"))
+                .frame(width: 144, height: 38)
+
+            HStack {
+                Image(systemName: "person.fill")
+                    .foregroundColor(.white)
+                    .padding(.leading, 15)
+
+                TextField("Last Name", text: $viewModel.lastName)
+                    .foregroundColor(.white)
+                    .font(.system(size: 14))
+                    .autocapitalization(.words)
+                    .disableAutocorrection(true)
+            }
+        }
+    }
+
+    private var contactField: some View {
+        Group {
+            if viewModel.isEditMode {
+                EditableProfileField(
+                    icon: "phone.fill",
+                    text: $viewModel.contactNumber,
+                    isEditable: true
+                )
+            } else {
+                ProfileInfoField(
+                    icon: "phone.fill",
+                    text: viewModel.contactNumber
+                )
+            }
+        }
+    }
+
+    private var dobField: some View {
+        Group {
+            if viewModel.isEditMode {
+                HStack(spacing: 22) {
+                    birthDayField
+                    birthMonthField
+                    birthYearField
+                }
+            } else {
+                ProfileInfoField(
+                    icon: "calendar",
+                    text: "\(viewModel.birthDay)-\(viewModel.birthMonth)-\(viewModel.birthYear)"
+                )
+            }
+        }
+    }
+
+    private var birthDayField: some View {
+        ZStack {
+            RoundedRectangle(cornerRadius: 20)
+                .fill(Color("BrandSecondary"))
+                .frame(width: 80, height: 38)
+
+            TextField("DD", text: $viewModel.birthDay)
+                .foregroundColor(.white)
+                .font(.system(size: 14))
+                .multilineTextAlignment(.center)
+                .keyboardType(.numberPad)
+        }
+    }
+
+    private var birthMonthField: some View {
+        ZStack {
+            RoundedRectangle(cornerRadius: 20)
+                .fill(Color("BrandSecondary"))
+                .frame(width: 80, height: 38)
+
+            TextField("MM", text: $viewModel.birthMonth)
+                .foregroundColor(.white)
+                .font(.system(size: 14))
+                .multilineTextAlignment(.center)
+                .keyboardType(.numberPad)
+        }
+    }
+
+    private var birthYearField: some View {
+        ZStack {
+            RoundedRectangle(cornerRadius: 20)
+                .fill(Color("BrandSecondary"))
+                .frame(width: 80, height: 38)
+
+            TextField("YYYY", text: $viewModel.birthYear)
+                .foregroundColor(.white)
+                .font(.system(size: 14))
+                .multilineTextAlignment(.center)
+                .keyboardType(.numberPad)
+        }
+    }
+
+    private var emailField: some View {
+        Group {
+            if viewModel.isEditMode {
+                EditableProfileField(
+                    icon: "envelope.fill",
+                    text: $viewModel.email,
+                    isEditable: false
+                )
+            } else {
+                ProfileInfoField(
+                    icon: "envelope.fill",
+                    text: viewModel.email
+                )
+            }
+        }
+    }
+
+    private var passwordField: some View {
+        Group {
+            if viewModel.isEditMode {
+                passwordEditField
+            } else {
+                ProfileInfoField(
+                    icon: "lock.fill",
+                    text: "********"
+                )
+            }
+        }
+    }
+
+    private var passwordEditField: some View {
+        ZStack(alignment: .leading) {
+            RoundedRectangle(cornerRadius: 20)
+                .fill(Color("BrandSecondary"))
+                .frame(width: 316, height: 38)
+
+            HStack {
+                Image(systemName: "lock.fill")
+                    .foregroundColor(.white)
+                    .padding(.leading, 15)
+
+                if showPassword {
+                    TextField("Password", text: $viewModel.password)
+                        .foregroundColor(.white)
+                        .font(.system(size: 14))
+                        .textInputAutocapitalization(.never)
+                        .autocorrectionDisabled()
+                } else {
+                    SecureField("Password", text: $viewModel.password)
+                        .foregroundColor(.white)
+                        .font(.system(size: 14))
+                        .textInputAutocapitalization(.never)
+                        .autocorrectionDisabled()
+                }
+
+                Button(action: {
+                    showPassword.toggle()
+                }) {
+                    Image(systemName: showPassword ? "eye.slash.fill" : "eye.fill")
+                        .foregroundColor(.white.opacity(0.7))
+                        .padding(.trailing, 15)
+                }
+            }
+        }
+    }
+
+    private var actionButtonsSection: some View {
+        HStack(spacing: 15) {
+            editInfoButton
+            saveChangesButton
+        }
+        .padding(.top, 30)
+    }
+
+    private var editInfoButton: some View {
+        Button(action: {
+            viewModel.isEditMode.toggle()
+            viewModel.loadUserDataForEditing()
+        }) {
+            HStack(spacing: 8) {
+                Image(systemName: "pencil")
+                    .font(.system(size: 12))
+                Text("Edit Info")
+                    .font(.system(size: 12))
+                    .fontWeight(.semibold)
+            }
+            .foregroundColor(.white)
+            .frame(width: 140, height: 38)
+            .background(Color("BrandPrimary"))
+            .cornerRadius(20)
+        }
+    }
+
+    private var saveChangesButton: some View {
+        Button(action: {
+            viewModel.saveChanges()
+        }) {
+            if viewModel.isSaving {
+                ProgressView()
+                    .tint(.white)
+                    .frame(width: 145, height: 38)
+            } else {
+                HStack(spacing: 8) {
+                    Image(systemName: "bookmark.fill")
+                        .font(.system(size: 12))
+                    Text("Save Changes")
+                        .font(.system(size: 12))
+                        .fontWeight(.semibold)
+                }
+                .foregroundColor(.white)
+                .frame(width: 145, height: 38)
+            }
+        }
+        .background(Color("BrandPrimary"))
+        .cornerRadius(20)
+        .disabled(viewModel.isSaving || !viewModel.hasChanges)
+        .opacity(!viewModel.hasChanges ? 0.5 : 1.0)
+    }
+}
+
+struct ProfileInfoField: View {
+    let icon: String
+    let text: String
+
+    var body: some View {
+        ZStack(alignment: .leading) {
+            RoundedRectangle(cornerRadius: 20)
+                .fill(Color("BrandSecondary"))
+                .frame(width: 316, height: 38)
+
+            HStack(spacing: 15) {
+                Image(systemName: icon)
+                    .foregroundColor(.white)
+                    .font(.system(size: 14))
+                    .frame(width: 20)
+                    .padding(.leading, 15)
+
+                Text(text)
+                    .font(.system(size: 14))
+                    .foregroundColor(.white)
+
+                Spacer()
+            }
+        }
+    }
+}
+
+struct EditableProfileField: View {
+    let icon: String
+    @Binding var text: String
+    let isEditable: Bool
+
+    var body: some View {
+        ZStack(alignment: .leading) {
+            RoundedRectangle(cornerRadius: 20)
+                .fill(Color("BrandSecondary"))
+                .frame(width: 316, height: 38)
+            
+
+            HStack(spacing: 15) {
+                Image(systemName: icon)
+                    .foregroundColor(.white)
+                    .font(.system(size: 14))
+                    .frame(width: 20)
+                    .padding(.leading, 15)
+
+                if isEditable {
+                    TextField("", text: $text)
+                        .foregroundColor(.white)
+                        .font(.system(size: 14))
+                        .textInputAutocapitalization(.never)
+                        .autocorrectionDisabled()
+                } else {
+                    Text(text)
+                        .font(.system(size: 14))
+                        .foregroundColor(.white)
+                }
+
+                Spacer()
+            }
         }
     }
 }

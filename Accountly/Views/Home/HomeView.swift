@@ -4,60 +4,93 @@
 //
 //  Created by Rimsha on 23/01/2026.
 //
-
 import SwiftUI
 
 struct HomeView: View {
-    
+    @StateObject private var viewModel = HomeViewModel()
+    @State private var selectedUser: User?
+
     var body: some View {
-        
-        ScrollView{
-            VStack{
+        ScrollView {
+            VStack(spacing: 0) {
                 HStack {
-                    Text("@  Accountly")
+                    Text("ⓐ")
+                        .font(.system(size: 28))
+                        .fontWeight(.bold)
+                        .foregroundColor(Color("BrandPrimary"))
+                    
+                    Text("Accountly")
                         .font(.largeTitle)
                         .fontWeight(.bold)
                         .foregroundColor(Color("BrandPrimary"))
+                    
                     Spacer()
                 }
                 .padding(.top, 40)
-                .padding(.horizontal,30)
-                HStack(){
-
-
-                    ZStack(alignment: .leading) {
-                        RoundedRectangle(cornerRadius: 20)
-                            .fill(Color("BrandSecondary"))
-                            .frame(width : 316 ,height: 108)
-                        Circle()
-                            .frame(width: 57, height: 56)
-                            .foregroundColor(Color("BrandGray"))//                        if viewModel.contactNumber.isEmpty {
-//                            Text("Contact Number")
-//                                .foregroundColor(.white)
-//                                .padding(.leading, 35)
-//                        }
+                .padding(.horizontal, 30)
+                .padding(.bottom, 30)
+                
+                HStack(spacing: 12) {
+                    Image(systemName: "person.3.fill")
+                        .font(.system(size: 24))
+                        .foregroundColor(Color("BrandPrimary"))
+                    
+                    Text("Community")
+                        .font(.title)
+                        .fontWeight(.medium)
+                        .foregroundColor(Color("BrandPrimary"))
+                    
+                    Spacer()
+                }
+                .padding(.horizontal, 30)
+                .padding(.bottom, 30)
+                
+                if viewModel.isLoading {
+                    ProgressView()
+                        .tint(Color("BrandPrimary"))
+                        .padding(.top, 50)
+                } else if let error = viewModel.errorMessage {
+                    VStack(spacing: 16) {
+                        Image(systemName: "exclamationmark.triangle.fill")
+                            .font(.system(size: 40))
+                            .foregroundColor(Color("BrandPrimary"))
                         
-                        HStack {
-                            Image(systemName: "person.fill")
-                                .resizable()
-                                    .scaledToFit()
-                                    .frame(width: 31, height: 31)
-                                .foregroundColor(.white)
-                                .padding(.leading, 10)
-                            
-//                            TextField("", text: $viewModel.contactNumber)
-//                                .foregroundColor(.white)
-//                                .padding(.leading, 4)
+                        Text(error)
+                            .foregroundColor(Color("BrandPrimary"))
+                            .multilineTextAlignment(.center)
+                        
+                        Button("Retry") {
+                            viewModel.fetchAllUsers()
+                        }
+                        .foregroundColor(.white)
+                        .padding(.horizontal, 30)
+                        .padding(.vertical, 12)
+                        .background(Color("BrandPrimary"))
+                        .cornerRadius(10)
+                    }
+                    .padding(.top, 50)
+                } else {
+                    LazyVStack(spacing: 15) {
+                        ForEach(viewModel.users) { user in
+                            UserCardView(user: user) {
+                                selectedUser = user
+                            }
                         }
                     }
-                 
-                }.padding(.horizontal, 50)
+                    .padding(.horizontal, 43)
+                }
                 
-                Spacer()        }
-            .frame(maxWidth: .infinity, maxHeight: .infinity)
-            .background {
-                Color("AppBackground")
-                    .ignoresSafeArea()
+                Spacer()
+                    .frame(height: 100)
+            }
+        }
+        .background(Color("AppBackground").ignoresSafeArea())
+        .onAppear {
+            viewModel.fetchAllUsers()
+        }
+        .fullScreenCover(item: $selectedUser) { user in
+            NavigationStack {
+                ProfileDetailView(user: user)
             }
         }
     }
