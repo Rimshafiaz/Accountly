@@ -1,6 +1,7 @@
 import Foundation
 import FirebaseDatabase
 import Combine
+import FirebaseAuth
 
 class HomeViewModel: ObservableObject {
     @Published var users: [User] = []
@@ -31,15 +32,22 @@ class HomeViewModel: ObservableObject {
                 }
                 
                 var fetchedUsers: [User] = []
-                
+                let currentUserId = Auth.auth().currentUser?.uid
+
                 for child in snapshot.children {
                     guard let snapshot = child as? DataSnapshot,
                           let userData = snapshot.value as? [String: Any] else {
                         continue
                     }
-                    
+
+                    let userId = snapshot.key
+
+                    if userId == currentUserId {
+                        continue
+                    }
+
                     let user = User(
-                        id: snapshot.key,
+                        id: userId,
                         firstName: userData["firstName"] as? String ?? "",
                         lastName: userData["lastName"] as? String ?? "",
                         contactNumber: userData["contactNumber"] as? String ?? "",
@@ -49,10 +57,10 @@ class HomeViewModel: ObservableObject {
                         email: userData["email"] as? String ?? "",
                         profileImageURL: userData["profileImageURL"] as? String
                     )
-                    
+
                     fetchedUsers.append(user)
                 }
-                
+
                 self.users = fetchedUsers
             }
         }

@@ -75,7 +75,7 @@ struct ProfileDetailView: View {
                                 Image(systemName: "person.fill")
                                     .resizable()
                                     .scaledToFit()
-                                    .frame(width: 143, height: 143)
+                                    .frame(width: 90, height: 90)
                                     .foregroundColor(.black)
                             }
                     @unknown default:

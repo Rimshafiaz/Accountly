@@ -52,9 +52,10 @@ struct MyProfileView: View {
 
             
         }
-        .padding(.top, 40)
+        .padding(.top, 15)
+        .padding(.bottom, 35)
         .padding(.horizontal, 30)
-        .padding(.bottom, 40)
+       
     }
 
     private var contentSection: some View {
@@ -101,9 +102,26 @@ struct MyProfileView: View {
         VStack(spacing: 20) {
             userNameSection
             profileImageSection
+            if let validationError = viewModel.validationError {
+                validationErrorView(validationError)
+            }
             profileFieldsSection
             actionButtonsSection
         }
+    }
+
+    private func validationErrorView(_ error: String) -> some View {
+        HStack(spacing: 8) {
+            Image(systemName: "exclamationmark.triangle.fill")
+                .foregroundColor(.white)
+            Text(error)
+                .font(.system(size: 12))
+                .foregroundColor(.white)
+        }
+        .padding(.horizontal, 16)
+        .padding(.vertical, 10)
+        .background(Color.red.opacity(0.9))
+        .cornerRadius(10)
     }
 
     private var userNameSection: some View {
@@ -138,7 +156,7 @@ struct MyProfileView: View {
                     Image(uiImage: profileImage)
                         .resizable()
                         .scaledToFill()
-                        .frame(width: 143, height: 143)
+                        .frame(width: 85, height: 85)
                         .clipShape(Circle())
                 } else if let urlString = viewModel.profileImageURL,
                           let url = URL(string: urlString) {
@@ -229,7 +247,7 @@ struct MyProfileView: View {
         ZStack {
             RoundedRectangle(cornerRadius: 20)
                 .fill(Color("BrandSecondary"))
-                .frame(width: 144, height: 38)
+                .frame(maxWidth: .infinity, minHeight: 40)
 
             HStack {
                 Image(systemName: "person.fill")
@@ -249,7 +267,7 @@ struct MyProfileView: View {
         ZStack {
             RoundedRectangle(cornerRadius: 20)
                 .fill(Color("BrandSecondary"))
-                .frame(width: 144, height: 38)
+                .frame(maxWidth: .infinity, minHeight: 40)
 
             HStack {
                 Image(systemName: "person.fill")
@@ -303,7 +321,7 @@ struct MyProfileView: View {
         ZStack {
             RoundedRectangle(cornerRadius: 20)
                 .fill(Color("BrandSecondary"))
-                .frame(width: 80, height: 38)
+                .frame(maxWidth: .infinity, minHeight: 40)
 
             TextField("DD", text: $viewModel.birthDay)
                 .foregroundColor(.white)
@@ -317,7 +335,7 @@ struct MyProfileView: View {
         ZStack {
             RoundedRectangle(cornerRadius: 20)
                 .fill(Color("BrandSecondary"))
-                .frame(width: 80, height: 38)
+                .frame(maxWidth: .infinity, minHeight: 40)
 
             TextField("MM", text: $viewModel.birthMonth)
                 .foregroundColor(.white)
@@ -331,7 +349,7 @@ struct MyProfileView: View {
         ZStack {
             RoundedRectangle(cornerRadius: 20)
                 .fill(Color("BrandSecondary"))
-                .frame(width: 80, height: 38)
+                .frame(maxWidth: .infinity, minHeight: 40)
 
             TextField("YYYY", text: $viewModel.birthYear)
                 .foregroundColor(.white)
@@ -372,36 +390,74 @@ struct MyProfileView: View {
     }
 
     private var passwordEditField: some View {
-        ZStack(alignment: .leading) {
-            RoundedRectangle(cornerRadius: 20)
-                .fill(Color("BrandSecondary"))
-                .frame(width: 316, height: 38)
+        VStack(spacing: 10) {
+            ZStack(alignment: .leading) {
+                RoundedRectangle(cornerRadius: 20)
+                    .fill(Color("BrandSecondary"))
+                    .frame(maxWidth: .infinity, minHeight: 40)
 
-            HStack {
-                Image(systemName: "lock.fill")
-                    .foregroundColor(.white)
-                    .padding(.leading, 15)
+                HStack {
+                    Image(systemName: "lock.fill")
+                        .foregroundColor(.white)
+                        .padding(.leading, 15)
 
-                if showPassword {
-                    TextField("Password", text: $viewModel.password)
-                        .foregroundColor(.white)
-                        .font(.system(size: 14))
-                        .textInputAutocapitalization(.never)
-                        .autocorrectionDisabled()
-                } else {
-                    SecureField("Password", text: $viewModel.password)
-                        .foregroundColor(.white)
-                        .font(.system(size: 14))
-                        .textInputAutocapitalization(.never)
-                        .autocorrectionDisabled()
+                    if showPassword {
+                        TextField("New Password (optional)", text: $viewModel.password)
+                            .foregroundColor(.white)
+                            .font(.system(size: 14))
+                            .textInputAutocapitalization(.never)
+                            .autocorrectionDisabled()
+                    } else {
+                        SecureField("New Password (optional)", text: $viewModel.password)
+                            .foregroundColor(.white)
+                            .font(.system(size: 14))
+                            .textInputAutocapitalization(.never)
+                            .autocorrectionDisabled()
+                    }
+
+                    Button(action: {
+                        showPassword.toggle()
+                    }) {
+                        Image(systemName: showPassword ? "eye.slash.fill" : "eye.fill")
+                            .foregroundColor(.white.opacity(0.7))
+                            .padding(.trailing, 15)
+                    }
                 }
+            }
 
-                Button(action: {
-                    showPassword.toggle()
-                }) {
-                    Image(systemName: showPassword ? "eye.slash.fill" : "eye.fill")
-                        .foregroundColor(.white.opacity(0.7))
-                        .padding(.trailing, 15)
+            if !viewModel.password.isEmpty {
+                ZStack(alignment: .leading) {
+                    RoundedRectangle(cornerRadius: 20)
+                        .fill(Color("BrandSecondary"))
+                        .frame(maxWidth: .infinity, minHeight: 40)
+
+                    HStack {
+                        Image(systemName: "lock.fill")
+                            .foregroundColor(.white)
+                            .padding(.leading, 15)
+
+                        if showPassword {
+                            TextField("Confirm Password", text: $viewModel.confirmPassword)
+                                .foregroundColor(.white)
+                                .font(.system(size: 14))
+                                .textInputAutocapitalization(.never)
+                                .autocorrectionDisabled()
+                        } else {
+                            SecureField("Confirm Password", text: $viewModel.confirmPassword)
+                                .foregroundColor(.white)
+                                .font(.system(size: 14))
+                                .textInputAutocapitalization(.never)
+                                .autocorrectionDisabled()
+                        }
+
+                        Button(action: {
+                            showPassword.toggle()
+                        }) {
+                            Image(systemName: showPassword ? "eye.slash.fill" : "eye.fill")
+                                .foregroundColor(.white.opacity(0.7))
+                                .padding(.trailing, 15)
+                        }
+                    }
                 }
             }
         }
@@ -409,15 +465,23 @@ struct MyProfileView: View {
 
     private var actionButtonsSection: some View {
         HStack(spacing: 15) {
-            editInfoButton
-            saveChangesButton
+            if viewModel.isEditMode {
+           
+                cancelButton
+                saveChangesButton
+            } else {
+              
+                editInfoButton
+            }
         }
-        .padding(.top, 30)
+        .padding(.top,15)
+        .padding(.horizontal, 43)
+        .padding(.bottom, 300)
     }
 
     private var editInfoButton: some View {
         Button(action: {
-            viewModel.isEditMode.toggle()
+            viewModel.isEditMode = true
             viewModel.loadUserDataForEditing()
         }) {
             HStack(spacing: 8) {
@@ -428,8 +492,31 @@ struct MyProfileView: View {
                     .fontWeight(.semibold)
             }
             .foregroundColor(.white)
-            .frame(width: 140, height: 38)
+            .frame(maxWidth: .infinity, minHeight: 40)
+            
             .background(Color("BrandPrimary"))
+            .cornerRadius(20)
+            .padding(.horizontal, 100)
+            
+        }
+    }
+
+    private var cancelButton: some View {
+        Button(action: {
+        
+            viewModel.isEditMode = false
+            viewModel.fetchCurrentUserProfile()
+        }) {
+            HStack(spacing: 8) {
+                Image(systemName: "xmark.circle.fill")
+                    .font(.system(size: 12))
+                Text("Cancel")
+                    .font(.system(size: 12))
+                    .fontWeight(.semibold)
+            }
+            .foregroundColor(.white)
+            .frame(maxWidth: .infinity, minHeight: 40)
+            .background(Color.red)
             .cornerRadius(20)
         }
     }
@@ -438,24 +525,23 @@ struct MyProfileView: View {
         Button(action: {
             viewModel.saveChanges()
         }) {
-            if viewModel.isSaving {
-                ProgressView()
-                    .tint(.white)
-                    .frame(width: 145, height: 38)
-            } else {
-                HStack(spacing: 8) {
-                    Image(systemName: "bookmark.fill")
+            HStack(spacing: 8) {
+                if viewModel.isSaving {
+                    ProgressView()
+                        .tint(.white)
+                } else {
+                    Image(systemName: "square.and.arrow.down")
                         .font(.system(size: 12))
-                    Text("Save Changes")
+                    Text("Save")
                         .font(.system(size: 12))
                         .fontWeight(.semibold)
                 }
-                .foregroundColor(.white)
-                .frame(width: 145, height: 38)
             }
+            .foregroundColor(.white)
+            .frame(maxWidth: .infinity, minHeight: 40)
+            .background(Color("BrandPrimary"))
+            .cornerRadius(20)
         }
-        .background(Color("BrandPrimary"))
-        .cornerRadius(20)
         .disabled(viewModel.isSaving || !viewModel.hasChanges)
         .opacity(!viewModel.hasChanges ? 0.5 : 1.0)
     }
@@ -469,7 +555,7 @@ struct ProfileInfoField: View {
         ZStack(alignment: .leading) {
             RoundedRectangle(cornerRadius: 20)
                 .fill(Color("BrandSecondary"))
-                .frame(width: 316, height: 38)
+                .frame(maxWidth: .infinity, minHeight: 40)
 
             HStack(spacing: 15) {
                 Image(systemName: icon)
@@ -497,8 +583,8 @@ struct EditableProfileField: View {
         ZStack(alignment: .leading) {
             RoundedRectangle(cornerRadius: 20)
                 .fill(Color("BrandSecondary"))
-                .frame(width: 316, height: 38)
-            
+                .frame(maxWidth: .infinity, minHeight: 40)
+
 
             HStack(spacing: 15) {
                 Image(systemName: icon)
@@ -513,6 +599,7 @@ struct EditableProfileField: View {
                         .font(.system(size: 14))
                         .textInputAutocapitalization(.never)
                         .autocorrectionDisabled()
+                        .padding(.horizontal, 43)
                 } else {
                     Text(text)
                         .font(.system(size: 14))

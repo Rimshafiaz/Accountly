@@ -79,7 +79,34 @@ class AuthenticationManager: ObservableObject {
             print("Error signing out: \(signOutError)")
         }
     }
+    func deleteAccount(completion: @escaping (Bool, Error?) -> Void) {
+        guard let user = Auth.auth().currentUser else {
+            completion(false, NSError(domain: "Auth", code: -1, userInfo: [NSLocalizedDescriptionKey: "No user logged in"]))
+            return
+        }
 
+        let userId = user.uid
+
+        let ref = Database.database().reference().child("users/\(userId)")
+        ref.removeValue { error, _ in
+            if let error = error {
+                completion(false, error)
+                return
+            }
+
+            user.delete { error in
+                DispatchQueue.main.async {
+                    if let error = error {
+                        completion(false, error)
+                    } else {
+                        self.isLoggedIn = false
+                        self.currentUser = nil
+                        completion(true, nil)
+                    }
+                }
+            }
+        }
+    }
     func getCurrentUserId() -> String? {
         return Auth.auth().currentUser?.uid
     }

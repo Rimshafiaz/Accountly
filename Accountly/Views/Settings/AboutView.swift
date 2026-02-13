@@ -30,7 +30,7 @@ struct AboutView: View {
                     
                     Spacer()
                 }
-                          .padding(.vertical, 20)
+                          .padding(.vertical, 8)
                 
                 HStack(spacing: 12) {
                     Image(systemName: "book")

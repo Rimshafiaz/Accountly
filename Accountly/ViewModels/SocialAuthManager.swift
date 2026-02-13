@@ -8,6 +8,7 @@
 import Foundation
 import Firebase
 import FirebaseAuth
+import FirebaseCore
 import FirebaseDatabase
 import GoogleSignIn
 import AuthenticationServices
@@ -95,44 +96,45 @@ class SocialAuthManager: NSObject, ObservableObject {
     }
 
     private func checkAndCreateUserProfile(user: FirebaseAuth.User, provider: String) {
+        print("DEBUG: checkAndCreateUserProfile for provider: \(provider)")
         let ref = Database.database().reference().child("users/\(user.uid)")
+        print("DEBUG: Database path: users/\(user.uid)")
 
-        ref.observeSingleEvent(of: .value) { [weak self] snapshot in
+        var firstName = ""
+        var lastName = ""
+
+        if let displayName = user.displayName {
+            let components = displayName.components(separatedBy: " ")
+            firstName = components.first ?? ""
+            lastName = components.dropFirst().joined(separator: " ")
+        }
+
+        print("DEBUG: Name from provider: \(firstName) \(lastName)")
+        print("DEBUG: Email from provider: \(user.email ?? "none")")
+
+       
+        let userData: [String: Any] = [
+            "firstName": firstName,
+            "lastName": lastName,
+            "email": user.email ?? "",
+            "profileImageURL": user.photoURL?.absoluteString ?? "",
+            "authProvider": provider
+        ]
+
+        print("DEBUG: About to save user data to Firebase...")
+        print("DEBUG: Data: \(userData)")
+
+        ref.updateChildValues(userData) { [weak self] error, _ in
+            print("DEBUG: updateChildValues callback FIRED!")
             guard let self = self else { return }
+            self.isLoading = false
 
-            if snapshot.exists() {
-                self.isLoading = false
-                self.authManager.isLoggedIn = true
+            if let error = error {
+                print("DEBUG: FAILED to save user data: \(error.localizedDescription)")
+                self.errorMessage = "Failed to save profile: \(error.localizedDescription)"
             } else {
-                var firstName = ""
-                var lastName = ""
-
-                if let displayName = user.displayName {
-                    let components = displayName.components(separatedBy: " ")
-                    firstName = components.first ?? ""
-                    lastName = components.dropFirst().joined(separator: " ")
-                }
-
-                let userData: [String: Any] = [
-                    "firstName": firstName,
-                    "lastName": lastName,
-                    "email": user.email ?? "",
-                    "contactNumber": "",
-                    "birthDay": "",
-                    "birthMonth": "",
-                    "birthYear": "",
-                    "profileImageURL": user.photoURL?.absoluteString ?? "",
-                    "authProvider": provider
-                ]
-
-                ref.setValue(userData) { error, _ in
-                    self.isLoading = false
-                    if let error = error {
-                        self.errorMessage = error.localizedDescription
-                    } else {
-                        self.authManager.isLoggedIn = true
-                    }
-                }
+                print("DEBUG: User data saved SUCCESSFULLY!")
+                self.authManager.isLoggedIn = true
             }
         }
     }

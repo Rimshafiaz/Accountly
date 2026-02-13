@@ -26,13 +26,13 @@ struct HomeView: View {
                     
                     Spacer()
                 }
-                .padding(.vertical, 35)
+                .padding(.vertical, 15)
                 .padding(.horizontal, 30)
                 
                 HStack(spacing: 12) {
                     Image(systemName: "person.3.fill")
                         .font(.system(size: 24))
-                        .foregroundColor(.black)
+                        .foregroundColor(Color("BrandSecondary"))
                     
                     Text("Community")
                         .font(.title)

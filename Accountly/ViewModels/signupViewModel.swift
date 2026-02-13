@@ -129,11 +129,9 @@ return "Invalid Birth Date"        }
             }
 
             self.uploadProfileImage(userId: userId) { imageURL in
-                let finalImageURL = imageURL ?? "https://example.com/placeholder.jpg"
+                let finalImageURL = imageURL ?? "https://ui-avatars.com/api/?name=\(self.firstName)+\(self.lastName)&background=0D8ABC&color=fff"
                 self.saveUserData(userId: userId, profileImageURL: finalImageURL)
             }
-
-            
         }
     }
 

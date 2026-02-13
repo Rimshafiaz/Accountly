@@ -5,7 +5,6 @@
 //  Created by Rimsha on 23/01/2026.
 //
 
-
 import SwiftUI
 
 struct Loginview: View {
@@ -17,7 +16,7 @@ struct Loginview: View {
         ScrollView {
             VStack(spacing: 20) {
 
-               
+
                 HStack {
                     Text("ⓐ")
                         .font(.system(size: 28))
@@ -32,7 +31,7 @@ struct Loginview: View {
                     Spacer()
                 }
                 .padding(.horizontal)
-                .padding(.top, 30)
+                .padding(.top, 15)
                 .padding(.bottom , 140)
 
 
@@ -70,6 +69,31 @@ struct Loginview: View {
                     }
                 }
 
+                HStack {
+                    Spacer()
+                    if viewModel.isResettingPassword {
+                        HStack(spacing: 6) {
+                            ProgressView()
+                                .tint(Color("BrandPrimary"))
+                                .scaleEffect(0.8)
+                            Text("Sending...")
+                                .font(.system(size: 13))
+                                .foregroundColor(Color("BrandPrimary"))
+                        }
+                        .padding(.trailing, 45)
+                    } else {
+                        Button {
+                            viewModel.resetPassword()
+                        } label: {
+                            Text("Forgot Password?")
+                                .font(.system(size: 13))
+                                .foregroundColor(Color("BrandPrimary"))
+                                .underline()
+                        }
+                        .padding(.trailing, 45)
+                    }
+                }
+
             
                 Button {
                     viewModel.login()
@@ -82,26 +106,49 @@ struct Loginview: View {
                                 .fontWeight(.semibold)
                         }
                     }
-                    .frame(minWidth:83, maxWidth: 100, minHeight: 48, maxHeight: 38)
+                    .frame(height: 48)
+                    .frame(maxWidth: .infinity)
                 }
                 .background(Color("BrandPrimary"))
                 .foregroundColor(.white)
                 .cornerRadius(24)
-                .padding(.horizontal)
+                .padding(.horizontal,150)
                 .padding(.vertical, 10)
                 .disabled(viewModel.isLoading)
 
           
                 if let error = viewModel.errorMessage {
-                    Text(error)
-                        .foregroundColor(.red)
-                        .font(.footnote)
+                    HStack(spacing: 8) {
+                        Image(systemName: "exclamationmark.circle.fill")
+                            .font(.system(size: 14))
+                        Text(error)
+                            .font(.system(size: 13))
+                            .fixedSize(horizontal: false, vertical: true)
+                    }
+                    .foregroundColor(.white)
+                    .padding(.horizontal, 16)
+                    .padding(.vertical, 12)
+                    .background(Color.red.opacity(0.9))
+                    .cornerRadius(12)
+                    .padding(.horizontal, 30)
+                    .shadow(color: Color.red.opacity(0.3), radius: 5, x: 0, y: 2)
                 }
 
                 if let socialError = socialAuthManager.errorMessage {
-                    Text(socialError)
-                        .foregroundColor(.red)
-                        .font(.footnote)
+                    HStack(spacing: 8) {
+                        Image(systemName: "exclamationmark.circle.fill")
+                            .font(.system(size: 14))
+                        Text(socialError)
+                            .font(.system(size: 13))
+                            .fixedSize(horizontal: false, vertical: true)
+                    }
+                    .foregroundColor(.white)
+                    .padding(.horizontal, 16)
+                    .padding(.vertical, 12)
+                    .background(Color.red.opacity(0.9))
+                    .cornerRadius(12)
+                    .padding(.horizontal, 30)
+                    .shadow(color: Color.red.opacity(0.3), radius: 5, x: 0, y: 2)
                 }
 
                 HStack {
@@ -112,7 +159,7 @@ struct Loginview: View {
                 }.padding(.vertical, 10)
 
        
-                HStack(spacing: 12) {
+                HStack(spacing: 8) {
                     GoogleSignInButton {
                         if let scene = UIApplication.shared.connectedScenes.first as? UIWindowScene,
                            let root = scene.windows.first?.rootViewController {
@@ -136,6 +183,16 @@ struct Loginview: View {
             .frame(maxWidth: .infinity)
         }
         .background(Color("AppBackground").ignoresSafeArea())
+        .alert("Password Reset", isPresented: $viewModel.showResetPasswordAlert) {
+            Button("OK") {
+                viewModel.showResetPasswordAlert = false
+                viewModel.resetPasswordMessage = nil
+            }
+        } message: {
+            if let message = viewModel.resetPasswordMessage {
+                Text(message)
+            }
+        }
     }
 }
 struct AuthField: View {
@@ -207,3 +264,4 @@ struct AppleSignInButton: View {
 #Preview {
     Loginview()
 }
+

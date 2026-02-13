@@ -69,7 +69,7 @@ struct UserCardView: View {
 
                     Spacer()
                 }
-                .padding(.horizontal, 15)
+                .padding(.horizontal, 12)
             }
             .frame(maxWidth: .infinity)
         }

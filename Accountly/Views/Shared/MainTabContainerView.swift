@@ -11,7 +11,7 @@ import SwiftUI
 
 struct MainTabContainerView: View {
     @State private var selectedTab = 0
-    
+
     var body: some View {
         ZStack(alignment: .bottom) {
             switch selectedTab {
@@ -20,11 +20,11 @@ struct MainTabContainerView: View {
             case 1:
                 MyProfileView()
             case 2:
-                SettingsView()
+                SettingsView(selectedTab: $selectedTab)
             default:
                 HomeView()
             }
-            
+
             CustomTabBar(selectedTab: $selectedTab)
         }
     }
