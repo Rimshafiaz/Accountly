@@ -16,6 +16,8 @@ struct SignupView: View {
     @State private var showPassword = false
     @State private var showConfirmPassword = false
     @State private var showDatePicker = false
+    @State private var showCountryPicker = false
+    @State private var countryCode = "+92"
     
     var body: some View {
         ScrollViewReader { proxy in
@@ -77,11 +79,61 @@ struct SignupView: View {
                     .padding(.horizontal, 40)
                     
                     
-                    SAuthField(icon: "phone.fill", placeholder: "Contact Number", text: $viewModel.contactNumber)
-                        .keyboardType(.phonePad)
-                        .padding(.horizontal, 40)
+                    HStack(spacing: 8) {
+                     
+                        Button {
+                            showCountryPicker = true
+                        } label: {
+                            HStack(spacing: 2) {
+                                Text(countryCode)
+                                    .font(.system(size: 13))
+                                    .foregroundColor(.white)
+                                    .lineLimit(1)
+                                    .minimumScaleFactor(0.8)
+                                Image(systemName: "chevron.down")
+                                    .font(.system(size: 8))
+                                    .foregroundColor(.white.opacity(0.7))
+                            }
+                            .padding(.horizontal, 6)
+                            .padding(.vertical, 8)
+                            
+                            .background(
+                                RoundedRectangle(cornerRadius: 20)
+                                    .fill(Color("BrandSecondary"))
+                            )
+                            .frame(minWidth: 33)
+                            .frame(height: 38)
+                        }
+
+                      
+                        HStack(spacing: 8) {
+                            ZStack {
+                                RoundedRectangle(cornerRadius: 22)
+                                    .fill(Color("BrandSecondary"))
+                                    .frame(maxWidth: .infinity, minHeight: 40, maxHeight: 44)
+
+                                HStack {
+                                    Image(systemName: "phone.fill")
+                                        .foregroundColor(.white)
+                                        .padding(.leading, 12)
+
+                                    TextField("Contact Number", text: $viewModel.contactNumber)
+                                        .foregroundColor(.white)
+                                        .keyboardType(.phonePad)
+                                }
+                            }
+                        }
+                    }
+                    .padding(.horizontal, 40)
                     
-//                    
+                  if showCountryPicker {
+                    CountryCodePicker(
+                        selectedCountryCode: $countryCode,
+                        isPresented: $showCountryPicker
+                            
+                    ).padding(.leading, 40)
+                }
+                
                     HStack(spacing: 8) {
 
                         ZStack {
@@ -158,7 +210,8 @@ struct SignupView: View {
                             isPresented: $showDatePicker
                         )
                     }
-                    
+
+                  
                     SAuthField(icon: "envelope.fill", placeholder: "Email", text: $viewModel.email)
                         .keyboardType(.emailAddress)
                         .padding(.horizontal, 40)

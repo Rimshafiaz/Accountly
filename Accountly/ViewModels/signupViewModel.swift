@@ -14,6 +14,7 @@ import FirebaseStorage
 class signUpViewModel: ObservableObject {
     @Published var firstName = ""
     @Published var lastName = ""
+    @Published var countryCode = "+92"
     @Published var contactNumber = ""
     @Published var birthDay = ""
     @Published var birthMonth = ""
@@ -51,11 +52,21 @@ class signUpViewModel: ObservableObject {
             "Invalid Last Name"
         }
 
-        let phoneRegex = #"^(\+92|0)3[0-9]{9}$"#
-        let phonePredicate = NSPredicate(format: "SELF MATCHES %@", phoneRegex)
+       
+        if countryCode == "+92" {
+            let phoneRegex = #"^3[0-9]{9}$"#
+            let phonePredicate = NSPredicate(format: "SELF MATCHES %@", phoneRegex)
 
-        if !phonePredicate.evaluate(with: contactNumber) { return
-            "Enter a valid Mobile Number"
+            if !phonePredicate.evaluate(with: contactNumber) {
+                return "Enter a valid Mobile Number (3XXXXXXXXX)"
+            }
+        } else {
+            let phoneRegex = #"^[0-9]{6,15}$"#
+            let phonePredicate = NSPredicate(format: "SELF MATCHES %@", phoneRegex)
+
+            if !phonePredicate.evaluate(with: contactNumber) {
+                return "Enter a valid phone number"
+            }
         }
 
         guard
@@ -157,10 +168,13 @@ return "Invalid Birth Date"        }
 
     private func saveUserData(userId: String, profileImageURL: String) {
         let ref = Database.database().reference().child("users/\(userId)")
+        let fullPhoneNumber = countryCode + contactNumber
         let userData: [String: Any] = [
             "firstName": firstName,
             "lastName": lastName,
+            "countryCode": countryCode,
             "contactNumber": contactNumber,
+            "fullPhoneNumber": fullPhoneNumber,
             "birthDay": birthDay,
             "birthMonth": birthMonth,
             "birthYear": birthYear,

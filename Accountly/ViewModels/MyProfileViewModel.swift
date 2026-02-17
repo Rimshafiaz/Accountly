@@ -27,6 +27,9 @@ class MyProfileViewModel: ObservableObject {
     @Published var lastName = "" {
         didSet { checkForChanges() }
     }
+    @Published var countryCode = "+92" {
+        didSet { checkForChanges() }
+    }
     @Published var contactNumber = "" {
         didSet { checkForChanges() }
     }
@@ -96,6 +99,8 @@ class MyProfileViewModel: ObservableObject {
                 email: userData["email"] as? String ?? "",
                 profileImageURL: userData["profileImageURL"] as? String
             )
+
+            self.countryCode = userData["countryCode"] as? String ?? "+92"
             
             self.loadUserDataForEditing()
         }
@@ -118,6 +123,7 @@ class MyProfileViewModel: ObservableObject {
         originalData = [
             "firstName": firstName,
             "lastName": lastName,
+            "countryCode": countryCode,
             "contactNumber": contactNumber,
             "birthDay": birthDay,
             "birthMonth": birthMonth,
@@ -135,6 +141,7 @@ class MyProfileViewModel: ObservableObject {
 
         let hasNameChanged = (firstName != originalData["firstName"] as? String)
         let hasLastNameChanged = (lastName != originalData["lastName"] as? String)
+        let hasCountryCodeChanged = (countryCode != originalData["countryCode"] as? String)
         let hasContactChanged = (contactNumber != originalData["contactNumber"] as? String)
         let hasBirthDayChanged = (birthDay != originalData["birthDay"] as? String)
         let hasBirthMonthChanged = (birthMonth != originalData["birthMonth"] as? String)
@@ -142,7 +149,7 @@ class MyProfileViewModel: ObservableObject {
         let hasImageChanged = (profileImage != nil)
         let hasPasswordChanged = !password.isEmpty || !confirmPassword.isEmpty
 
-        hasChanges = hasNameChanged || hasLastNameChanged || hasContactChanged || hasBirthDayChanged || hasBirthMonthChanged || hasBirthYearChanged || hasImageChanged || hasPasswordChanged
+        hasChanges = hasNameChanged || hasLastNameChanged || hasCountryCodeChanged || hasContactChanged || hasBirthDayChanged || hasBirthMonthChanged || hasBirthYearChanged || hasImageChanged || hasPasswordChanged
     }
     
     func saveChanges() {
@@ -205,11 +212,21 @@ class MyProfileViewModel: ObservableObject {
             return "Invalid Last Name"
         }
 
-        let phoneRegex = #"^(\+92|0)3[0-9]{9}$"#
-        let phonePredicate = NSPredicate(format: "SELF MATCHES %@", phoneRegex)
+     
+        if countryCode == "+92" {
+            let phoneRegex = #"^3[0-9]{9}$"#
+            let phonePredicate = NSPredicate(format: "SELF MATCHES %@", phoneRegex)
 
-        if !phonePredicate.evaluate(with: contactNumber) {
-            return "Enter a valid Mobile Number"
+            if !phonePredicate.evaluate(with: contactNumber) {
+                return "Enter a valid Mobile Number (3XXXXXXXXX)"
+            }
+        } else {
+            let phoneRegex = #"^[0-9]{6,15}$"#
+            let phonePredicate = NSPredicate(format: "SELF MATCHES %@", phoneRegex)
+
+            if !phonePredicate.evaluate(with: contactNumber) {
+                return "Enter a valid phone number"
+            }
         }
 
         guard
@@ -302,10 +319,13 @@ class MyProfileViewModel: ObservableObject {
     }
     
     private func updateUserData(userId: String) {
+        let fullPhoneNumber = countryCode + contactNumber
         var userData: [String: Any] = [
             "firstName": firstName,
             "lastName": lastName,
+            "countryCode": countryCode,
             "contactNumber": contactNumber,
+            "fullPhoneNumber": fullPhoneNumber,
             "birthDay": birthDay,
             "birthMonth": birthMonth,
             "birthYear": birthYear,
@@ -339,6 +359,7 @@ class MyProfileViewModel: ObservableObject {
                 self.originalData = [
                     "firstName": self.firstName,
                     "lastName": self.lastName,
+                    "countryCode": self.countryCode,
                     "contactNumber": self.contactNumber,
                     "birthDay": self.birthDay,
                     "birthMonth": self.birthMonth,

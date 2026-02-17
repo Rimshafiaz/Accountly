@@ -13,6 +13,7 @@ struct MyProfileView: View {
     @State private var selectedPickerItem: PhotosPickerItem?
     @State private var showPassword = false
     @State private var showDatePicker = false
+    @State private var showCountryPicker = false
 
     var body: some View {
         ScrollView {
@@ -287,15 +288,60 @@ struct MyProfileView: View {
     private var contactField: some View {
         Group {
             if viewModel.isEditMode {
-                EditableProfileField(
-                    icon: "phone.fill",
-                    text: $viewModel.contactNumber,
-                    isEditable: true
-                )
+                HStack(spacing: 8) {
+                    
+                    Button {
+                        showCountryPicker = true
+                    } label: {
+                        HStack(spacing: 2) {
+                            Text(viewModel.countryCode)
+                                .font(.system(size: 13))
+                                .foregroundColor(.white)
+                                .lineLimit(1)
+                                .minimumScaleFactor(0.8)
+                            Image(systemName: "chevron.down")
+                                .font(.system(size: 8))
+                                .foregroundColor(.white.opacity(0.7))
+                        }
+                        .padding(.horizontal, 6)
+                        .padding(.vertical, 8)
+                        .frame(height: 40)
+                        .background(
+                            RoundedRectangle(cornerRadius: 20)
+                                .fill(Color("BrandSecondary"))
+                        )
+                    }
+
+                    ZStack {
+                        RoundedRectangle(cornerRadius: 20)
+                            .fill(Color("BrandSecondary"))
+                            .frame(maxWidth: .infinity, minHeight: 40)
+
+                        HStack {
+                            Image(systemName: "phone.fill")
+                                .foregroundColor(.white)
+                                .padding(.leading, 15)
+
+                            TextField("Contact Number", text: $viewModel.contactNumber)
+                                .foregroundColor(.white)
+                                .keyboardType(.phonePad)
+                           
+                        }
+                       
+                    }
+                    
+                }
+                if showCountryPicker {
+                    CountryCodePicker(
+                        selectedCountryCode: $viewModel.countryCode,
+                        isPresented: $showCountryPicker
+                    )
+                }
+                  
             } else {
                 ProfileInfoField(
                     icon: "phone.fill",
-                    text: viewModel.contactNumber
+                    text: viewModel.contactNumber.isEmpty ? "" : "\(viewModel.countryCode) \(viewModel.contactNumber)"
                 )
             }
         }
@@ -317,7 +363,10 @@ struct MyProfileView: View {
                         birthYear: $viewModel.birthYear,
                         isPresented: $showDatePicker
                     )
+                    
                 }
+
+               
             } else {
                 ProfileInfoField(
                     icon: "calendar",
