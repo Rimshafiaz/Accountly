@@ -220,12 +220,36 @@ struct MyProfileView: View {
     private var profileFieldsSection: some View {
         VStack(spacing: 10) {
             nameFields
+                .padding(.horizontal, 43)
+
             contactField
+                .padding(.horizontal, 43)
+
+            if viewModel.isEditMode && showCountryPicker {
+                CountryCodePicker(
+                    selectedCountryCode: $viewModel.countryCode,
+                    isPresented: $showCountryPicker
+                )
+                .padding(.leading, 40)
+            }
+
             dobField
+                .padding(.horizontal, 43)
+
+            if viewModel.isEditMode && showDatePicker {
+                DOBDatePicker(
+                    birthDay: $viewModel.birthDay,
+                    birthMonth: $viewModel.birthMonth,
+                    birthYear: $viewModel.birthYear,
+                    isPresented: $showDatePicker
+                )
+            }
+
             emailField
+                .padding(.horizontal, 43)
             passwordField
+                .padding(.horizontal, 43)
         }
-        .padding(.horizontal, 43)
         .padding(.top, 20)
     }
 
@@ -249,7 +273,8 @@ struct MyProfileView: View {
         ZStack {
             RoundedRectangle(cornerRadius: 20)
                 .fill(Color("BrandSecondary"))
-                .frame(maxWidth: .infinity, minHeight: 40)
+                .frame(maxWidth: .infinity)
+                .frame(height: 40)
 
             HStack {
                 Image(systemName: "person.fill")
@@ -269,7 +294,8 @@ struct MyProfileView: View {
         ZStack {
             RoundedRectangle(cornerRadius: 20)
                 .fill(Color("BrandSecondary"))
-                .frame(maxWidth: .infinity, minHeight: 40)
+                .frame(maxWidth: .infinity)
+                .frame(height: 40)
 
             HStack {
                 Image(systemName: "person.fill")
@@ -289,7 +315,6 @@ struct MyProfileView: View {
         Group {
             if viewModel.isEditMode {
                 HStack(spacing: 8) {
-                    
                     Button {
                         showCountryPicker = true
                     } label: {
@@ -315,7 +340,8 @@ struct MyProfileView: View {
                     ZStack {
                         RoundedRectangle(cornerRadius: 20)
                             .fill(Color("BrandSecondary"))
-                            .frame(maxWidth: .infinity, minHeight: 40)
+                            .frame(maxWidth: .infinity)
+                            .frame(height: 40)
 
                         HStack {
                             Image(systemName: "phone.fill")
@@ -325,19 +351,9 @@ struct MyProfileView: View {
                             TextField("Contact Number", text: $viewModel.contactNumber)
                                 .foregroundColor(.white)
                                 .keyboardType(.phonePad)
-                           
                         }
-                       
                     }
-                    
                 }
-                if showCountryPicker {
-                    CountryCodePicker(
-                        selectedCountryCode: $viewModel.countryCode,
-                        isPresented: $showCountryPicker
-                    )
-                }
-                  
             } else {
                 ProfileInfoField(
                     icon: "phone.fill",
@@ -348,25 +364,13 @@ struct MyProfileView: View {
     }
 
     private var dobField: some View {
-        VStack(spacing: 10) {
+        Group {
             if viewModel.isEditMode {
                 HStack(spacing: 22) {
                     birthDayField
                     birthMonthField
                     birthYearField
                 }
-
-                if showDatePicker {
-                    DOBDatePicker(
-                        birthDay: $viewModel.birthDay,
-                        birthMonth: $viewModel.birthMonth,
-                        birthYear: $viewModel.birthYear,
-                        isPresented: $showDatePicker
-                    )
-                    
-                }
-
-               
             } else {
                 ProfileInfoField(
                     icon: "calendar",
@@ -380,7 +384,8 @@ struct MyProfileView: View {
         ZStack {
             RoundedRectangle(cornerRadius: 20)
                 .fill(Color("BrandSecondary"))
-                .frame(maxWidth: .infinity, minHeight: 40)
+                .frame(maxWidth: .infinity)
+                .frame(height: 40)
 
             Text(viewModel.birthDay.isEmpty ? "DD" : viewModel.birthDay)
                 .foregroundColor(viewModel.birthDay.isEmpty ? .white.opacity(0.5) : .white)
@@ -391,13 +396,15 @@ struct MyProfileView: View {
                     showDatePicker = true
                 }
         }
+        .fixedSize(horizontal: false, vertical: true)
     }
 
     private var birthMonthField: some View {
         ZStack {
             RoundedRectangle(cornerRadius: 20)
                 .fill(Color("BrandSecondary"))
-                .frame(maxWidth: .infinity, minHeight: 40)
+                .frame(maxWidth: .infinity)
+                .frame(height: 40)
 
             Text(viewModel.birthMonth.isEmpty ? "MM" : viewModel.birthMonth)
                 .foregroundColor(viewModel.birthMonth.isEmpty ? .white.opacity(0.5) : .white)
@@ -408,13 +415,15 @@ struct MyProfileView: View {
                     showDatePicker = true
                 }
         }
+        .fixedSize(horizontal: false, vertical: true)
     }
 
     private var birthYearField: some View {
         ZStack {
             RoundedRectangle(cornerRadius: 20)
                 .fill(Color("BrandSecondary"))
-                .frame(maxWidth: .infinity, minHeight: 40)
+                .frame(maxWidth: .infinity)
+                .frame(height: 40)
 
             Text(viewModel.birthYear.isEmpty ? "YYYY" : viewModel.birthYear)
                 .foregroundColor(viewModel.birthYear.isEmpty ? .white.opacity(0.5) : .white)
@@ -425,6 +434,7 @@ struct MyProfileView: View {
                     showDatePicker = true
                 }
         }
+        .fixedSize(horizontal: false, vertical: true)
     }
 
     private var emailField: some View {
