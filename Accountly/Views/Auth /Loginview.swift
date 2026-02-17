@@ -120,9 +120,9 @@ struct Loginview: View {
                 if let error = viewModel.errorMessage {
                     HStack(spacing: 8) {
                         Image(systemName: "exclamationmark.circle.fill")
-                            .font(.system(size: 14))
+                            .font(.system(size: 16))
                         Text(error)
-                            .font(.system(size: 13))
+                            .font(.system(size: 15))
                             .fixedSize(horizontal: false, vertical: true)
                     }
                     .foregroundColor(.white)
@@ -137,9 +137,9 @@ struct Loginview: View {
                 if let socialError = socialAuthManager.errorMessage {
                     HStack(spacing: 8) {
                         Image(systemName: "exclamationmark.circle.fill")
-                            .font(.system(size: 14))
+                            .font(.system(size: 16))
                         Text(socialError)
-                            .font(.system(size: 13))
+                            .font(.system(size: 15))
                             .fixedSize(horizontal: false, vertical: true)
                     }
                     .foregroundColor(.white)
@@ -229,7 +229,9 @@ struct GoogleSignInButton: View {
     var body: some View {
         Button(action: action) {
             HStack(spacing: 8) {
-                Image(systemName: "globe")
+                Text("G")
+                    .font(.system(size: 20, weight: .bold))
+                    .foregroundColor(.white)
                 Text("Login with Google")
                     .font(.subheadline)
             }

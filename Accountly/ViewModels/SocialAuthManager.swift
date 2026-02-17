@@ -9,7 +9,6 @@ import Foundation
 import Firebase
 import FirebaseAuth
 import FirebaseCore
-import FirebaseDatabase
 import GoogleSignIn
 import AuthenticationServices
 import CryptoKit
@@ -97,7 +96,6 @@ class SocialAuthManager: NSObject, ObservableObject {
 
     private func checkAndCreateUserProfile(user: FirebaseAuth.User, provider: String) {
         print("DEBUG: checkAndCreateUserProfile for provider: \(provider)")
-        let ref = Database.database().reference().child("users/\(user.uid)")
         print("DEBUG: Database path: users/\(user.uid)")
 
         var firstName = ""
@@ -112,7 +110,6 @@ class SocialAuthManager: NSObject, ObservableObject {
         print("DEBUG: Name from provider: \(firstName) \(lastName)")
         print("DEBUG: Email from provider: \(user.email ?? "none")")
 
-       
         let userData: [String: Any] = [
             "firstName": firstName,
             "lastName": lastName,
@@ -124,14 +121,14 @@ class SocialAuthManager: NSObject, ObservableObject {
         print("DEBUG: About to save user data to Firebase...")
         print("DEBUG: Data: \(userData)")
 
-        ref.updateChildValues(userData) { [weak self] error, _ in
-            print("DEBUG: updateChildValues callback FIRED!")
+        DatabaseService.updateUser(userId: user.uid, data: userData) { [weak self] success, error in
+            print("DEBUG: updateUser callback FIRED!")
             guard let self = self else { return }
             self.isLoading = false
 
-            if let error = error {
-                print("DEBUG: FAILED to save user data: \(error.localizedDescription)")
-                self.errorMessage = "Failed to save profile: \(error.localizedDescription)"
+            if !success {
+                print("DEBUG: FAILED to save user data: \(error?.localizedDescription ?? "Unknown error")")
+                self.errorMessage = "Failed to save profile: \(error?.localizedDescription ?? "Unknown error")"
             } else {
                 print("DEBUG: User data saved SUCCESSFULLY!")
                 self.authManager.isLoggedIn = true

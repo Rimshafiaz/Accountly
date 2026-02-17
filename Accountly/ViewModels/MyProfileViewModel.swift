@@ -8,12 +8,10 @@
 import Foundation
 import SwiftUI
 import FirebaseAuth
-import FirebaseDatabase
-import FirebaseStorage
 import PhotosUI
 import Combine
 class MyProfileViewModel: ObservableObject {
-    @Published var currentUser: User?
+    @Published var currentUser: Accountly.User?
     @Published var isLoading = false
     @Published var errorMessage: String?
     @Published var isEditMode = false
@@ -65,7 +63,6 @@ class MyProfileViewModel: ObservableObject {
         }
     }
 
-    private let databaseRef = Database.database().reference()
     private var originalData: [String: Any] = [:]
     
     func fetchCurrentUserProfile() {
@@ -76,33 +73,23 @@ class MyProfileViewModel: ObservableObject {
         
         isLoading = true
         errorMessage = nil
-        
-        databaseRef.child("users").child(userId).observeSingleEvent(of: .value) { [weak self] snapshot in
-            guard let self = self else { return }
-            
-            self.isLoading = false
-            
-            guard snapshot.exists(),
-                  let userData = snapshot.value as? [String: Any] else {
-                self.errorMessage = "User data not found"
-                return
-            }
-            
-            self.currentUser = User(
-                id: userId,
-                firstName: userData["firstName"] as? String ?? "",
-                lastName: userData["lastName"] as? String ?? "",
-                contactNumber: userData["contactNumber"] as? String ?? "",
-                birthDay: userData["birthDay"] as? String ?? "",
-                birthMonth: userData["birthMonth"] as? String ?? "",
-                birthYear: userData["birthYear"] as? String ?? "",
-                email: userData["email"] as? String ?? "",
-                profileImageURL: userData["profileImageURL"] as? String
-            )
 
-            self.countryCode = userData["countryCode"] as? String ?? "+92"
-            
-            self.loadUserDataForEditing()
+        DatabaseService.fetchUser(userId: userId) { [weak self] result in
+            guard let self = self else { return }
+
+            self.isLoading = false
+
+            switch result {
+            case .success(let userData):
+                if let user = Accountly.User(from: userData, id: userId) {
+                    self.currentUser = user
+                    self.loadUserDataForEditing()
+                } else {
+                    self.errorMessage = "Failed to parse user data"
+                }
+            case .failure(let error):
+                self.errorMessage = error.localizedDescription
+            }
         }
     }
     
@@ -111,6 +98,7 @@ class MyProfileViewModel: ObservableObject {
         firstName = user.firstName
         lastName = user.lastName
         contactNumber = user.contactNumber
+        countryCode = user.countryCode ?? "+92"
         birthDay = user.birthDay
         birthMonth = user.birthMonth
         birthYear = user.birthYear
@@ -188,91 +176,18 @@ class MyProfileViewModel: ObservableObject {
     }
 
     private func validateFields() -> String? {
-        let trimmedFirst = firstName.trimmingCharacters(in: .whitespacesAndNewlines)
-        let trimmedLast = lastName.trimmingCharacters(in: .whitespacesAndNewlines)
-        let trimmedEmail = email.trimmingCharacters(in: .whitespacesAndNewlines)
-
-        if trimmedFirst.isEmpty {
-            return "Please Enter your First Name"
-        }
-        if trimmedLast.isEmpty {
-            return "Please Enter your Last Name"
-        }
-        if trimmedEmail.isEmpty {
-            return "Please Enter your Email"
-        }
-
-        let nameRegex = "^[A-Za-z][A-Za-z' -]{1,49}$"
-        let namePredicate = NSPredicate(format: "SELF MATCHES %@", nameRegex)
-
-        if !namePredicate.evaluate(with: trimmedFirst) {
-            return "Invalid First Name"
-        }
-        if !namePredicate.evaluate(with: trimmedLast) {
-            return "Invalid Last Name"
-        }
-
-     
-        if countryCode == "+92" {
-            let phoneRegex = #"^3[0-9]{9}$"#
-            let phonePredicate = NSPredicate(format: "SELF MATCHES %@", phoneRegex)
-
-            if !phonePredicate.evaluate(with: contactNumber) {
-                return "Enter a valid Mobile Number (3XXXXXXXXX)"
-            }
-        } else {
-            let phoneRegex = #"^[0-9]{6,15}$"#
-            let phonePredicate = NSPredicate(format: "SELF MATCHES %@", phoneRegex)
-
-            if !phonePredicate.evaluate(with: contactNumber) {
-                return "Enter a valid phone number"
-            }
-        }
-
-        guard
-            let day = Int(birthDay),
-            let month = Int(birthMonth),
-            let year = Int(birthYear)
-        else {
-            return "Invalid Birth Date"
-        }
-
-        var components = DateComponents()
-        components.day = day
-        components.month = month
-        components.year = year
-
-        guard let dob = Calendar.current.date(from: components) else {
-            return "Invalid Birth Date"
-        }
-
-        let now = Date()
-        let age = Calendar.current.dateComponents([.year], from: dob, to: now).year ?? 0
-
-        if age < 18 {
-            return "You must be at least 18 years old to create an account"
-        }
-
-        let emailRegex = "[A-Z0-9a-z._%+-]+@[A-Za-z0-9.-]+\\.[A-Za-z]{2,64}"
-        let emailPredicate = NSPredicate(format: "SELF MATCHES %@", emailRegex)
-
-        if !emailPredicate.evaluate(with: trimmedEmail) {
-            return "Enter a valid Email Address"
-        }
-
-        if !password.isEmpty {
-            let passwordRegex = "^(?=.*[a-z])(?=.*[A-Z])(?=.*\\d)(?=.*[^A-Za-z\\d]).{8,}$"
-            let passwordPredicate = NSPredicate(format: "SELF MATCHES %@", passwordRegex)
-
-            if !passwordPredicate.evaluate(with: password) {
-                return "Password must be 8+ chars with upper, number & symbol"
-            }
-            if password != confirmPassword {
-                return "Passwords do not match"
-            }
-        }
-
-        return nil
+        return UserValidator.validateProfileEditFields(
+            firstName: firstName,
+            lastName: lastName,
+            email: email,
+            contactNumber: contactNumber,
+            countryCode: countryCode,
+            birthDay: birthDay,
+            birthMonth: birthMonth,
+            birthYear: birthYear,
+            password: password,
+            confirmPassword: confirmPassword
+        )
     }
 
     private func updatePassword(completion: @escaping (Bool) -> Void) {
@@ -289,54 +204,34 @@ class MyProfileViewModel: ObservableObject {
     }
     
     private func uploadProfileImage(_ image: UIImage, userId: String) {
-        guard let imageData = image.jpegData(compressionQuality: 0.5) else {
-            errorMessage = "Failed to process image"
-            isSaving = false
-            return
-        }
-        
-        let storageRef = Storage.storage().reference()
-        let profileImageRef = storageRef.child("profile_images/\(userId).jpg")
-        
-        profileImageRef.putData(imageData, metadata: nil) { [weak self] _, error in
-            if let error = error {
-                self?.errorMessage = "Failed to upload image: \(error.localizedDescription)"
-                self?.isSaving = false
-                return
-            }
-            
-            profileImageRef.downloadURL { url, error in
-                if let error = error {
-                    self?.errorMessage = "Failed to get image URL: \(error.localizedDescription)"
-                    self?.isSaving = false
-                    return
-                }
-                
-                self?.profileImageURL = url?.absoluteString
-                self?.updateUserData(userId: userId)
+        ImageUploadService.uploadProfileImage(image, userId: userId) { [weak self] (result: Result<String, Error>) in
+            guard let self = self else { return }
+            switch result {
+            case .success(let urlString):
+                self.profileImageURL = urlString
+                self.updateUserData(userId: userId)
+            case .failure(let error):
+                self.errorMessage = error.localizedDescription
+                self.isSaving = false
             }
         }
     }
     
     private func updateUserData(userId: String) {
-        let fullPhoneNumber = countryCode + contactNumber
-        var userData: [String: Any] = [
-            "firstName": firstName,
-            "lastName": lastName,
-            "countryCode": countryCode,
-            "contactNumber": contactNumber,
-            "fullPhoneNumber": fullPhoneNumber,
-            "birthDay": birthDay,
-            "birthMonth": birthMonth,
-            "birthYear": birthYear,
-            "email": email
-        ]
+        let user = User(
+            id: userId,
+            firstName: firstName,
+            lastName: lastName,
+            contactNumber: contactNumber,
+            countryCode: countryCode,
+            birthDay: birthDay,
+            birthMonth: birthMonth,
+            birthYear: birthYear,
+            email: email,
+            profileImageURL: profileImageURL
+        )
 
-        if let imageURL = profileImageURL, !imageURL.isEmpty {
-            userData["profileImageURL"] = imageURL
-        }
-
-        databaseRef.child("users").child(userId).updateChildValues(userData) { [weak self] error, _ in
+        DatabaseService.updateUser(userId: userId, data: user.toDictionary()) { [weak self] success, error in
             guard let self = self else { return }
 
             self.isSaving = false
@@ -344,26 +239,16 @@ class MyProfileViewModel: ObservableObject {
             if let error = error {
                 self.errorMessage = "Failed to save: \(error.localizedDescription)"
             } else {
-                self.currentUser = User(
-                    id: userId,
-                    firstName: self.firstName,
-                    lastName: self.lastName,
-                    contactNumber: self.contactNumber,
-                    birthDay: self.birthDay,
-                    birthMonth: self.birthMonth,
-                    birthYear: self.birthYear,
-                    email: self.email,
-                    profileImageURL: self.profileImageURL
-                )
+                self.currentUser = user
 
                 self.originalData = [
-                    "firstName": self.firstName,
-                    "lastName": self.lastName,
-                    "countryCode": self.countryCode,
-                    "contactNumber": self.contactNumber,
-                    "birthDay": self.birthDay,
-                    "birthMonth": self.birthMonth,
-                    "birthYear": self.birthYear
+                    "firstName": user.firstName,
+                    "lastName": user.lastName,
+                    "countryCode": user.countryCode ?? "",
+                    "contactNumber": user.contactNumber,
+                    "birthDay": user.birthDay,
+                    "birthMonth": user.birthMonth,
+                    "birthYear": user.birthYear
                 ]
 
                 self.profileImage = nil
@@ -376,13 +261,6 @@ class MyProfileViewModel: ObservableObject {
         }
     }
     
-    func logout() {
-        do {
-            try Auth.auth().signOut()
-            AuthenticationManager.shared.isLoggedIn = false
-            AuthenticationManager.shared.currentUser = nil
-        } catch {
-            errorMessage = "Failed to logout: \(error.localizedDescription)"
-        }
-    }
+
 }
+

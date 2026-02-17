@@ -85,6 +85,7 @@ struct MyProfileView: View {
                 .foregroundColor(Color("BrandPrimary"))
 
             Text(error)
+                .font(.callout)
                 .foregroundColor(Color("BrandPrimary"))
                 .multilineTextAlignment(.center)
 

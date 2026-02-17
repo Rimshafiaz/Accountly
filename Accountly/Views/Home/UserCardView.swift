@@ -61,7 +61,7 @@ struct UserCardView: View {
                     VStack(alignment: .leading, spacing: 4) {
                         Text("\(user.firstName) \(user.lastName)")
                         Text(user.email)
-                        Text(user.contactNumber)
+                        Text("\(user.countryCode ?? "") \(user.contactNumber)")
                         Text("\(user.birthDay)/\(user.birthMonth)/\(user.birthYear)")
                     }
                     .font(.system(size: 16))
@@ -84,13 +84,14 @@ struct UserCardView: View {
         firstName: "John",
         lastName: "Doe",
         contactNumber: "0304-1234567",
+        countryCode: "+92",
         birthDay: "24",
         birthMonth: "11",
         birthYear: "2002",
         email: "johndoe@example.com",
         profileImageURL: "https://example.com/profile.jpg"
     )
-    
+
     UserCardView(user: mockUser) {
         print("Tapped on \(mockUser.firstName)")
     }

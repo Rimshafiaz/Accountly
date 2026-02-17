@@ -92,7 +92,7 @@ struct ProfileDetailView: View {
 
                     ProfileReadOnlyField(
                         icon: "phone.fill",
-                        text: user.contactNumber
+                        text: "\(user.countryCode ?? "") \(user.contactNumber)"
                     )
 
                     ProfileReadOnlyField(
@@ -146,6 +146,7 @@ struct ProfileReadOnlyField: View {
                 firstName: "John",
                 lastName: "Doe",
                 contactNumber: "0304-1234567",
+                countryCode: "+92",
                 birthDay: "24",
                 birthMonth: "11",
                 birthYear: "2002",

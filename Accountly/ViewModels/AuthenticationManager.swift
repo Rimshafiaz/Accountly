@@ -7,7 +7,6 @@
 
 import Foundation
 import FirebaseAuth
-import FirebaseDatabase
 import Combine
 
 class AuthenticationManager: ObservableObject {
@@ -41,33 +40,16 @@ class AuthenticationManager: ObservableObject {
     }
 
     private func loadUserData(userId: String) {
-        let ref = Database.database().reference().child("users/\(userId)")
-
-        ref.observeSingleEvent(of: .value) { [weak self] snapshot in
-            if let userData = snapshot.value as? [String: Any],
-               let firstName = userData["firstName"] as? String,
-               let lastName = userData["lastName"] as? String,
-               let contactNumber = userData["contactNumber"] as? String,
-               let birthDay = userData["birthDay"] as? String,
-               let birthMonth = userData["birthMonth"] as? String,
-               let birthYear = userData["birthYear"] as? String,
-               let email = userData["email"] as? String {
-
-                let profileImageURL = userData["profileImageURL"] as? String
-
-                DispatchQueue.main.async {
-                    self?.currentUser = Accountly.User(
-                        id: userId,
-                        firstName: firstName,
-                        lastName: lastName,
-                        contactNumber: contactNumber,
-                        birthDay: birthDay,
-                        birthMonth: birthMonth,
-                        birthYear: birthYear,
-                        email: email,
-                        profileImageURL: profileImageURL
-                    )
+        DatabaseService.fetchUser(userId: userId) { [weak self] result in
+            switch result {
+            case .success(let userData):
+                if let user = User(from: userData, id: userId) {
+                    DispatchQueue.main.async {
+                        self?.currentUser = user
+                    }
                 }
+            case .failure:
+                break
             }
         }
     }
@@ -87,9 +69,10 @@ class AuthenticationManager: ObservableObject {
 
         let userId = user.uid
 
-        let ref = Database.database().reference().child("users/\(userId)")
-        ref.removeValue { error, _ in
-            if let error = error {
+        DatabaseService.deleteUser(userId: userId) { [weak self] success, error in
+            guard let self = self else { return }
+
+            if !success {
                 completion(false, error)
                 return
             }

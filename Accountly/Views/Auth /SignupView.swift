@@ -254,15 +254,15 @@ struct SignupView: View {
                     if let error = viewModel.errorMessage {
                         Text(error)
                             .foregroundColor(.red)
-                            .font(.footnote)
+                            .font(.callout)
                             .multilineTextAlignment(.center)
                             .padding(.horizontal, 40)
                     }
-                    
+
                     if let socialError = socialAuthManager.errorMessage {
                         Text(socialError)
                             .foregroundColor(.red)
-                            .font(.footnote)
+                            .font(.callout)
                             .multilineTextAlignment(.center)
                             .padding(.horizontal, 40)
                     }
@@ -383,7 +383,9 @@ struct SignupView: View {
         var body: some View {
             Button(action: action) {
                 HStack(spacing: 8) {
-                    Image(systemName: "globe")
+                    Text("G")
+                        .font(.system(size: 20, weight: .bold))
+                        .foregroundColor(.white)
                     Text("Signup with Google").font(.subheadline)
                 }
                 .frame(maxWidth: .infinity, minHeight: 44)

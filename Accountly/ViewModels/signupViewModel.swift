@@ -8,8 +8,6 @@
 import SwiftUI
 import Combine
 import FirebaseAuth
-import FirebaseDatabase
-import FirebaseStorage
 
 class signUpViewModel: ObservableObject {
     @Published var firstName = ""
@@ -29,89 +27,19 @@ class signUpViewModel: ObservableObject {
     private var authManager = AuthenticationManager.shared
 
     private func validateFields() -> String? {
-        let trimmedFirst = firstName.trimmingCharacters(in: .whitespacesAndNewlines)
-        let trimmedLast = lastName.trimmingCharacters(in: .whitespacesAndNewlines)
-        let trimmedEmail = email.trimmingCharacters(in: .whitespacesAndNewlines)
-
-        if trimmedFirst.isEmpty {
-            return "Please Enter your First Name"
-        }
-        if trimmedLast.isEmpty {
-            return "Please Enter your Last Name"
-        }
-        if trimmedEmail.isEmpty {
-            return "Please Enter your Email"
-        }
-        let nameRegex = "^[A-Za-z][A-Za-z' -]{1,49}$"
-        let namePredicate = NSPredicate(format: "SELF MATCHES %@", nameRegex)
-
-        if !namePredicate.evaluate(with: trimmedFirst) { return
-            
-            "Invalid First Name" }
-        if !namePredicate.evaluate(with: trimmedLast) { return
-            "Invalid Last Name"
-        }
-
-       
-        if countryCode == "+92" {
-            let phoneRegex = #"^3[0-9]{9}$"#
-            let phonePredicate = NSPredicate(format: "SELF MATCHES %@", phoneRegex)
-
-            if !phonePredicate.evaluate(with: contactNumber) {
-                return "Enter a valid Mobile Number (3XXXXXXXXX)"
-            }
-        } else {
-            let phoneRegex = #"^[0-9]{6,15}$"#
-            let phonePredicate = NSPredicate(format: "SELF MATCHES %@", phoneRegex)
-
-            if !phonePredicate.evaluate(with: contactNumber) {
-                return "Enter a valid phone number"
-            }
-        }
-
-        guard
-            let day = Int(birthDay),
-            let month = Int(birthMonth),
-            let year = Int(birthYear)
-        else {
-return "Invalid Birth Date"        }
-
-        var components = DateComponents()
-        components.day = day
-        components.month = month
-        components.year = year
-
-        guard let dob = Calendar.current.date(from: components) else { return
-            "Invalid Birth Date"
-        }
-
-        let now = Date()
-        let age = Calendar.current.dateComponents([.year], from: dob, to: now).year ?? 0
-
-        if age < 18 { return
-            "You must be at least 18 years old to create an account"
-        }
-        
-
-        let emailRegex = "[A-Z0-9a-z._%+-]+@[A-Za-z0-9.-]+\\.[A-Za-z]{2,64}"
-        let emailPredicate = NSPredicate(format: "SELF MATCHES %@", emailRegex)
-
-        if !emailPredicate.evaluate(with: trimmedEmail) { return
-            "Enter a valid Email Address"
-        }
-
-        let passwordRegex = "^(?=.*[a-z])(?=.*[A-Z])(?=.*\\d)(?=.*[^A-Za-z\\d]).{8,}$"
-        let passwordPredicate = NSPredicate(format: "SELF MATCHES %@", passwordRegex)
-
-        if !passwordPredicate.evaluate(with: password) { return "Password must be 8+ chars with upper, number & symbol" }
-        if password != confirmPassword { return
-            "Passwords do not match"
-        }
-        if profileImage == nil { return
-            "Please select a profile image"
-        }
-
-        return nil
+        return UserValidator.validateSignupFields(
+            firstName: firstName,
+            lastName: lastName,
+            email: email,
+            contactNumber: contactNumber,
+            countryCode: countryCode,
+            birthDay: birthDay,
+            birthMonth: birthMonth,
+            birthYear: birthYear,
+            password: password,
+            confirmPassword: confirmPassword,
+            profileImage: profileImage
+        )
     }
 
     func signUp() {
@@ -139,55 +67,43 @@ return "Invalid Birth Date"        }
                 return
             }
 
-            self.uploadProfileImage(userId: userId) { imageURL in
-                let finalImageURL = imageURL ?? "https://ui-avatars.com/api/?name=\(self.firstName)+\(self.lastName)&background=0D8ABC&color=fff"
-                self.saveUserData(userId: userId, profileImageURL: finalImageURL)
-            }
-        }
-    }
-
-    private func uploadProfileImage(userId: String, completion: @escaping (String?) -> Void) {
-        guard let image = profileImage, let imageData = image.jpegData(compressionQuality: 0.5) else {
-            completion(nil)
-            return
-        }
-
-        let storageRef = Storage.storage().reference().child("profile_images/\(userId).jpg")
-
-        storageRef.putData(imageData, metadata: nil) { metadata, error in
-            if error != nil {
-                completion(nil)
+            guard let image = self.profileImage else {
+                self.isLoading = false
+                self.errorMessage = "Profile image is required"
                 return
             }
 
-            storageRef.downloadURL { url, error in
-                completion(url?.absoluteString)
+            // Upload image with fallback
+            ImageUploadService.uploadProfileImageWithFallback(
+                image,
+                userId: userId,
+                fallbackName: "\(self.firstName) \(self.lastName)"
+            ) { imageURL in
+                self.saveUserData(userId: userId, profileImageURL: imageURL)
             }
         }
     }
 
     private func saveUserData(userId: String, profileImageURL: String) {
-        let ref = Database.database().reference().child("users/\(userId)")
-        let fullPhoneNumber = countryCode + contactNumber
-        let userData: [String: Any] = [
-            "firstName": firstName,
-            "lastName": lastName,
-            "countryCode": countryCode,
-            "contactNumber": contactNumber,
-            "fullPhoneNumber": fullPhoneNumber,
-            "birthDay": birthDay,
-            "birthMonth": birthMonth,
-            "birthYear": birthYear,
-            "email": email,
-            "profileImageURL": profileImageURL
-        ]
-        ref.setValue(userData) { [weak self] error, _ in
+        let user = User(
+            id: userId,
+            firstName: firstName,
+            lastName: lastName,
+            contactNumber: contactNumber,
+            countryCode: countryCode,
+            birthDay: birthDay,
+            birthMonth: birthMonth,
+            birthYear: birthYear,
+            email: email,
+            profileImageURL: profileImageURL
+        )
+
+        DatabaseService.saveUser(userId: userId, data: user.toDictionary()) { [weak self] success, error in
             guard let self = self else { return }
             self.isLoading = false
             if let error = error {
                 self.errorMessage = error.localizedDescription
             }
-        
         }
     }
 }
