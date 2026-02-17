@@ -15,6 +15,7 @@ struct SignupView: View {
     @State private var selectedImage: UIImage?
     @State private var showPassword = false
     @State private var showConfirmPassword = false
+    @State private var showDatePicker = false
     
     var body: some View {
         ScrollViewReader { proxy in
@@ -34,7 +35,8 @@ struct SignupView: View {
                         
                         Spacer()
                     }
-                    .padding(.vertical, 52)
+                    .padding(.top, 28)
+                    .padding(.bottom, 50)
                     .padding(.horizontal, 75)
                     
                     PhotosPicker(
@@ -79,14 +81,14 @@ struct SignupView: View {
                         .keyboardType(.phonePad)
                         .padding(.horizontal, 40)
                     
-                    
+//                    
                     HStack(spacing: 8) {
-                        
+
                         ZStack {
                             RoundedRectangle(cornerRadius: 20)
                                 .fill(Color("BrandSecondary"))
                                 .frame(height: 38)
-                            
+
                             HStack(spacing: 5) {
                                 Image(systemName: "calendar")
                                     .foregroundColor(.white)
@@ -97,47 +99,65 @@ struct SignupView: View {
                             .padding(.horizontal, 10)
                         }
                         .frame(width: 120)
-                        
+
                         ZStack {
                             RoundedRectangle(cornerRadius: 20)
                                 .fill(Color("BrandSecondary"))
                                 .frame(height: 38)
-                            
-                            TextField("DD", text: $viewModel.birthDay)
-                                .foregroundColor(.white)
+
+                            Text(viewModel.birthDay.isEmpty ? "DD" : viewModel.birthDay)
+                                .foregroundColor(viewModel.birthDay.isEmpty ? .black.opacity(0.15) : .white)
                                 .multilineTextAlignment(.center)
-                                .keyboardType(.numberPad)
                                 .padding(.horizontal, 5)
+                                .contentShape(Rectangle())
+                                .onTapGesture {
+                                    showDatePicker = true
+                                }
                         }
                         .frame(minWidth: 50)
-                        
+
                         ZStack {
                             RoundedRectangle(cornerRadius: 20)
                                 .fill(Color("BrandSecondary"))
                                 .frame(height: 38)
-                            
-                            TextField("MM", text: $viewModel.birthMonth)
-                                .foregroundColor(.white)
+
+                            Text(viewModel.birthMonth.isEmpty ? "MM" : viewModel.birthMonth)
+                                .foregroundColor(viewModel.birthMonth.isEmpty ? .black.opacity(0.15) : .white)
                                 .multilineTextAlignment(.center)
-                                .keyboardType(.numberPad)
                                 .padding(.horizontal, 5)
+                                .contentShape(Rectangle())
+                                .onTapGesture {
+                                    showDatePicker = true
+                                }
                         }
                         .frame(minWidth: 50)
-                        
+
                         ZStack {
                             RoundedRectangle(cornerRadius: 20)
                                 .fill(Color("BrandSecondary"))
                                 .frame(height: 38)
-                            
-                            TextField("YYYY", text: $viewModel.birthYear)
-                                .foregroundColor(.white)
+
+                            Text(viewModel.birthYear.isEmpty ? "YYYY" : viewModel.birthYear)
+                                .foregroundColor(viewModel.birthYear.isEmpty ?  .black.opacity(0.15) : .white)
                                 .multilineTextAlignment(.center)
-                                .keyboardType(.numberPad)
                                 .padding(.horizontal, 5)
+                                .contentShape(Rectangle())
+                                .onTapGesture {
+                                    showDatePicker = true
+                                }
                         }
                         .frame(minWidth: 65)
                     }
                     .padding(.horizontal, 40)
+
+                    if showDatePicker {
+                        DOBDatePicker(
+                            birthDay: $viewModel.birthDay,
+                            birthMonth: $viewModel.birthMonth,
+                            birthYear: $viewModel.birthYear,
+                            isPresented: $showDatePicker
+                        )
+                    }
                     
                     SAuthField(icon: "envelope.fill", placeholder: "Email", text: $viewModel.email)
                         .keyboardType(.emailAddress)
@@ -336,6 +356,7 @@ struct SignupView: View {
             }
         }
     }
+
 #Preview {
     SignupView()
 }

@@ -12,6 +12,7 @@ struct MyProfileView: View {
     @StateObject private var viewModel = MyProfileViewModel()
     @State private var selectedPickerItem: PhotosPickerItem?
     @State private var showPassword = false
+    @State private var showDatePicker = false
 
     var body: some View {
         ScrollView {
@@ -301,12 +302,21 @@ struct MyProfileView: View {
     }
 
     private var dobField: some View {
-        Group {
+        VStack(spacing: 10) {
             if viewModel.isEditMode {
                 HStack(spacing: 22) {
                     birthDayField
                     birthMonthField
                     birthYearField
+                }
+
+                if showDatePicker {
+                    DOBDatePicker(
+                        birthDay: $viewModel.birthDay,
+                        birthMonth: $viewModel.birthMonth,
+                        birthYear: $viewModel.birthYear,
+                        isPresented: $showDatePicker
+                    )
                 }
             } else {
                 ProfileInfoField(
@@ -323,11 +333,14 @@ struct MyProfileView: View {
                 .fill(Color("BrandSecondary"))
                 .frame(maxWidth: .infinity, minHeight: 40)
 
-            TextField("DD", text: $viewModel.birthDay)
-                .foregroundColor(.white)
+            Text(viewModel.birthDay.isEmpty ? "DD" : viewModel.birthDay)
+                .foregroundColor(viewModel.birthDay.isEmpty ? .white.opacity(0.5) : .white)
                 .font(.system(size: 14))
                 .multilineTextAlignment(.center)
-                .keyboardType(.numberPad)
+                .contentShape(Rectangle())
+                .onTapGesture {
+                    showDatePicker = true
+                }
         }
     }
 
@@ -337,11 +350,14 @@ struct MyProfileView: View {
                 .fill(Color("BrandSecondary"))
                 .frame(maxWidth: .infinity, minHeight: 40)
 
-            TextField("MM", text: $viewModel.birthMonth)
-                .foregroundColor(.white)
+            Text(viewModel.birthMonth.isEmpty ? "MM" : viewModel.birthMonth)
+                .foregroundColor(viewModel.birthMonth.isEmpty ? .white.opacity(0.5) : .white)
                 .font(.system(size: 14))
                 .multilineTextAlignment(.center)
-                .keyboardType(.numberPad)
+                .contentShape(Rectangle())
+                .onTapGesture {
+                    showDatePicker = true
+                }
         }
     }
 
@@ -351,11 +367,14 @@ struct MyProfileView: View {
                 .fill(Color("BrandSecondary"))
                 .frame(maxWidth: .infinity, minHeight: 40)
 
-            TextField("YYYY", text: $viewModel.birthYear)
-                .foregroundColor(.white)
+            Text(viewModel.birthYear.isEmpty ? "YYYY" : viewModel.birthYear)
+                .foregroundColor(viewModel.birthYear.isEmpty ? .white.opacity(0.5) : .white)
                 .font(.system(size: 14))
                 .multilineTextAlignment(.center)
-                .keyboardType(.numberPad)
+                .contentShape(Rectangle())
+                .onTapGesture {
+                    showDatePicker = true
+                }
         }
     }
 
